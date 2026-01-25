@@ -1,6 +1,32 @@
-def main():
-    print("Hello from universal-bot!")
+import asyncio
+import logging
+
+from aiogram import Bot
+from aiogram import Dispatcher
+from aiogram import types
+from aiogram.filters import Command, CommandStart
+
+from core.config import settings
+
+bot = Bot(token=settings.BOT_TOKEN)
+dp = Dispatcher()
+
+
+@dp.message(Command("help"))
+async def hendle_help(message: types.Message):
+    await message.answer(text="I'm a helper")
+
+
+@dp.message()
+async def handle_start(message: types.Message):
+    print(message.chat.id)
+    await message.reply(text=message.text)
+
+
+async def main():
+    logging.basicConfig(level=logging.DEBUG)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
