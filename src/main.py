@@ -20,7 +20,8 @@ async def hendle_help(message: types.Message):
 @dp.message()
 async def handle_start(message: types.Message):
     print(message.chat.id)
-    await message.reply(text=message.text)
+    print(message.photo[-1])
+    await message.answer_photo(photo=message.photo[0].file_id)
 
 
 async def main():
