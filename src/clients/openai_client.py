@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 
 from src.core.config import settings
 
-from src.sсhemas.chat import HistorySchema, ResponseSchema, RequestSchema
+from src.schemas.chat import HistorySchema, ResponseSchema, RequestSchema
 
 logger = logging.getLogger(__name__)
 
