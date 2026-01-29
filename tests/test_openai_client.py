@@ -6,7 +6,7 @@ from openai import AuthenticationError
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.clients.openai_client import OpenAIClient
-from src.sсhemas.chat import RequestSchema, HistorySchema, MessageSchema, MessageRole, ResponseSchema
+from src.schemas.chat import RequestSchema, HistorySchema, MessageSchema, MessageRole, ResponseSchema
 
 @pytest.fixture
 def openai_client():
