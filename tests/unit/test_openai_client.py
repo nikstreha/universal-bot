@@ -8,9 +8,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from src.clients.openai import OpenAIClient
 from src.schemas.chat import RequestSchema, HistorySchema, MessageSchema, MessageRole, ResponseSchema
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def openai_client():
     return OpenAIClient()
+
 
 @pytest.mark.asyncio
 async def test_embedding_success(openai_client):
@@ -27,10 +28,12 @@ async def test_embedding_success(openai_client):
         assert result == [0.1, 0.2, 0.3]
         mock_create.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_embedding_empty_text(openai_client):
     result = await openai_client.embedding("  ")
     assert result is None
+
 
 @pytest.mark.asyncio
 async def test_generate_success(openai_client):
@@ -54,6 +57,7 @@ async def test_generate_success(openai_client):
         assert result.content == "Hello there!"
         assert result.tokens_used == 15
         mock_create.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_invalid_token_error(openai_client): 

@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     MINIO_HOST: str
     MINIO_PORT: int
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_PASSWORD: str
+    REDIS_USER: str
+    REDIS_DB: int
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )
@@ -20,6 +26,10 @@ class Settings(BaseSettings):
     @property
     def minio_endpoint(self) -> str:
         return f"{self.MINIO_HOST}:{self.MINIO_PORT}"
+    
+    @property
+    def redis_url(self):
+        return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
 
 settings = Settings()
