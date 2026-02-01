@@ -1,14 +1,14 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 
-from src.clients.minio_client import MinioClient
+from src.clients.minio_client import get_minio_client
 from src.schemas.content_types import ContentTypes
 
 
 @pytest.fixture(scope="module")
 def minio_client():
     with patch("src.clients.minio_client.Minio"):
-        return MinioClient()
+        return get_minio_client()
 
 
 @pytest.mark.asyncio
