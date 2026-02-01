@@ -1,9 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Bot
-from aiogram import Dispatcher
-from aiogram import types
+from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command, CommandStart
 
 from core.config import settings

@@ -1,7 +1,7 @@
 import logging
 from typing import BinaryIO, Optional
-from miniopy_async import Minio
 
+from miniopy_async import Minio
 from src.core.config import settings
 from src.schemas.content_types import ContentTypes
 

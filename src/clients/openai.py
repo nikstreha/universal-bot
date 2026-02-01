@@ -2,10 +2,8 @@ import logging
 from typing import List, Optional
 
 from openai import AsyncOpenAI
-
 from src.core.config import settings
-
-from src.schemas.chat import HistorySchema, ResponseSchema, RequestSchema
+from src.schemas.chat import HistorySchema, RequestSchema, ResponseSchema
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,7 @@ class OpenAIClient:
             response = await self.client.embeddings.create(input=text, model=model)
             return response.data[0].embedding
         except Exception as e:
-            logger.error(f"OpenAI embedding error: {e}")
+            logger.error("OpenAI embedding error: %s", e)
             return None
     
     async def generate(
@@ -54,5 +52,8 @@ class OpenAIClient:
                 tokens_used=resp.usage.total_tokens if resp.usage else None
             )
         except Exception as e:
-            logger.error(f"OpenAI generate error: {e}")
+            logger.error("OpenAI generate error: %s", e)
             raise
+
+
+openai_client = OpenAIClient()
