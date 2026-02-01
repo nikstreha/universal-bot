@@ -1,6 +1,5 @@
 import uuid
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +26,7 @@ class BaseChatSchema(BaseModel):
 
 
 class ResponseSchema(BaseChatSchema):
-    tokens_used: Optional[int] = None
+    tokens_used: int | None = None
 
 
 class RequestSchema(BaseChatSchema):

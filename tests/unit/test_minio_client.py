@@ -13,31 +13,37 @@ def minio_client():
 
 @pytest.mark.asyncio
 async def test_check_or_create_bucket_existing_bucket(minio_client):
-    with patch.object(
-        minio_client.client,
-        "bucket_exists",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch.object(
-        minio_client.client,
-        "make_bucket",
-        new_callable=AsyncMock,
+    with (
+        patch.object(
+            minio_client.client,
+            "bucket_exists",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch.object(
+            minio_client.client,
+            "make_bucket",
+            new_callable=AsyncMock,
+        ),
     ):
         await minio_client.check_or_create_bucket("test-bucket")
 
 
 @pytest.mark.asyncio
 async def test_check_or_create_bucket_creates_bucket(minio_client):
-    with patch.object(
-        minio_client.client,
-        "bucket_exists",
-        new_callable=AsyncMock,
-        return_value=False,
-    ), patch.object(
-        minio_client.client,
-        "make_bucket",
-        new_callable=AsyncMock,
-    ) as mock_make:
+    with (
+        patch.object(
+            minio_client.client,
+            "bucket_exists",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch.object(
+            minio_client.client,
+            "make_bucket",
+            new_callable=AsyncMock,
+        ) as mock_make,
+    ):
         await minio_client.check_or_create_bucket("test-bucket")
 
         mock_make.assert_called_once_with("test-bucket")
@@ -57,16 +63,19 @@ async def test_check_or_create_bucket_bucket_exists_fails(minio_client):
 
 @pytest.mark.asyncio
 async def test_check_or_create_bucket_make_bucket_fails(minio_client, caplog):
-    with patch.object(
-        minio_client.client,
-        "bucket_exists",
-        new_callable=AsyncMock,
-        return_value=False,
-    ), patch.object(
-        minio_client.client,
-        "make_bucket",
-        new_callable=AsyncMock,
-        side_effect=RuntimeError("create failed"),
+    with (
+        patch.object(
+            minio_client.client,
+            "bucket_exists",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch.object(
+            minio_client.client,
+            "make_bucket",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("create failed"),
+        ),
     ):
         with pytest.raises(RuntimeError):
             await minio_client.check_or_create_bucket("test-bucket")
@@ -111,7 +120,6 @@ async def test_download_file_success(minio_client):
         "get_object",
         new_callable=AsyncMock,
     ) as mock_get:
-
         mock_stream = AsyncMock()
         mock_stream.read.return_value = b"file-data"
 
@@ -130,7 +138,6 @@ async def test_download_file_empty_stream(minio_client):
         "get_object",
         new_callable=AsyncMock,
     ) as mock_get:
-
         mock_stream = AsyncMock()
         mock_stream.read.return_value = b""
 

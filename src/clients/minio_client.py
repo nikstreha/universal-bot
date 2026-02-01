@@ -25,21 +25,15 @@ class MinioClient:
             logger.info("Bucket %s created", bucket_name)
         logger.info("Bucket %s exists", bucket_name)
 
-    async def upload_file(
-            self,
-            bucket_name: str,
-            object_name: str,
-            data: BinaryIO,
-            content_type: ContentTypes
-            ):
+    async def upload_file(self, bucket_name: str, object_name: str, data: BinaryIO, content_type: ContentTypes):
         await self.client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
             data=data,
             length=len(data),
             content_type=content_type.value,
-            )
-        
+        )
+
         logger.info("File %s uploaded to bucket %s", object_name, bucket_name)
 
     async def download_file(self, bucket_name: str, object_name: str):
@@ -54,7 +48,8 @@ class MinioClient:
         return data
 
 
-_minio_client: Optional[MinioClient] = None
+_minio_client: MinioClient | None = None
+
 
 def get_minio_client() -> MinioClient:
     global _minio_client
