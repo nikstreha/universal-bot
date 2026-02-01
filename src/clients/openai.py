@@ -7,25 +7,49 @@ from src.schemas.chat import HistorySchema, RequestSchema, ResponseSchema
 logger = logging.getLogger(__name__)
 
 
-class OpenAIClient:
-    def __init__(self):
-        self.client = AsyncOpenAI(api_key=settings.MODEL_TOKEN, base_url=settings.PROXYAPI_BASE_URL)
+class _OpenAIClient:
+    def __init__(self) -> None:
+        self.client: AsyncOpenAI | None = None
 
-    async def embedding(self, text: str, model: str = settings.EMBEDDING_MODEL) -> list[float] | None:
+    def connect(self) -> None:  # need to add retry and backoff
+        if self.client is not None:
+            return
+        self.client = AsyncOpenAI(
+            api_key=settings.MODEL_TOKEN, base_url=settings.PROXYAPI_BASE_URL,
+        )
+
+    def ensure_connected(self) -> None:
+        if self.client is None:
+            self.connect()
+            raise RuntimeError("OpenAI client not connected")  # noqa: EM101, TRY003
+
+    async def embedding(
+        self, text: str, model: str = settings.EMBEDDING_MODEL,
+    ) -> list[float] | None:
+
         text = text.strip()
         if not text:
             return None
 
         try:
-            response = await self.client.embeddings.create(input=text, model=model)
+            response = await self.client.embeddings.create(
+                input=text, model=model,
+            )
             return response.data[0].embedding
-        except Exception as e:
-            logger.error("OpenAI embedding error: %s", e)
+        
+        except Exception:
+            logger.exception("OpenAI embedding error")
             return None
 
-    async def generate(self, request: RequestSchema, history: HistorySchema) -> ResponseSchema:
+    async def generate(
+        self, request: RequestSchema, history: HistorySchema,
+    ) -> ResponseSchema:
+        
         try:
-            messages = [message.model_dump(exclude_none=True) for message in history.messages]
+            messages = [
+                message.model_dump(exclude_none=True)
+                for message in history.messages
+            ]
             messages.append({"role": "user", "content": request.content})
 
             resp = await self.client.chat.completions.create(
@@ -38,11 +62,18 @@ class OpenAIClient:
             content = resp.choices[0].message.content or ""
 
             return ResponseSchema(
-                user_id=request.user_id, content=content, tokens_used=resp.usage.total_tokens if resp.usage else None
+                user_id=request.user_id,
+                content=content,
+                tokens_used=resp.usage.total_tokens if resp.usage else None,
             )
-        except Exception as e:
-            logger.error("OpenAI generate error: %s", e)
+        
+        except Exception:
+            logger.exception("OpenAI generate error")
             raise
 
 
-openai_client = OpenAIClient()
+_openai_client = _OpenAIClient()
+
+
+def get_openai_client() -> _OpenAIClient:
+    return _openai_client

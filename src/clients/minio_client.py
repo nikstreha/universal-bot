@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 class _MinioClient:
     def __init__(self) -> None:
+        self.client: Minio | None = None
+
+    def connect(self) -> None:
+        if self.client is not None:
+            return
+        
         self.client = Minio(
             endpoint=settings.minio_endpoint,
             access_key=settings.MINIO_ROOT_USER,
@@ -19,7 +25,7 @@ class _MinioClient:
             secure=False,
         )
 
-        logger.info("Minio client initialized")
+        logger.info("Minio client connected")
 
     async def check_or_create_bucket(self, bucket_name: str) -> None:
         if not await self.client.bucket_exists(bucket_name):
@@ -27,7 +33,13 @@ class _MinioClient:
             logger.info("Bucket %s created", bucket_name)
         logger.info("Bucket %s exists", bucket_name)
 
-    async def upload_file(self, bucket_name: str, object_name: str, data: BinaryIO, content_type: ContentTypes) -> None:
+    async def upload_file(
+        self,
+        bucket_name: str,
+        object_name: str,
+        data: BinaryIO,
+        content_type: ContentTypes,
+    ) -> None:
         await self.client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
@@ -45,7 +57,9 @@ class _MinioClient:
         ) as obj:
             data = await obj.read()
 
-        logger.info("File %s downloaded from bucket %s", object_name, bucket_name)
+        logger.info(
+            "File %s downloaded from bucket %s", object_name, bucket_name,
+        )
 
         return data
 

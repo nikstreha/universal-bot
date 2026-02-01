@@ -1,6 +1,6 @@
 target-version = "py314"
  
-line-length = 120
+line-length = 80
 indent-width = 4
  
 src = ["src"]
@@ -19,6 +19,7 @@ ignore = [
     "CPY001",
     "W292",
     "W293",
+    "COM812"
 ]
 
 exclude = [
