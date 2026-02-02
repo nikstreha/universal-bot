@@ -3,6 +3,7 @@ import logging
 from openai import AsyncOpenAI
 from src.core.config import settings
 from src.schemas.chat import HistorySchema, RequestSchema, ResponseSchema
+from src.utils.connect_retry import retry_with_reconnect
 
 logger = logging.getLogger(__name__)
 
@@ -11,18 +12,14 @@ class _OpenAIClient:
     def __init__(self) -> None:
         self.client: AsyncOpenAI | None = None
 
-    def connect(self) -> None:  # need to add retry and backoff
+    async def connect(self) -> None:  # need to add retry and backoff
         if self.client is not None:
             return
         self.client = AsyncOpenAI(
             api_key=settings.MODEL_TOKEN, base_url=settings.PROXYAPI_BASE_URL,
         )
 
-    def ensure_connected(self) -> None:
-        if self.client is None:
-            self.connect()
-            raise RuntimeError("OpenAI client not connected")  # noqa: EM101, TRY003
-
+    @retry_with_reconnect
     async def embedding(
         self, text: str, model: str = settings.EMBEDDING_MODEL,
     ) -> list[float] | None:
@@ -41,6 +38,7 @@ class _OpenAIClient:
             logger.exception("OpenAI embedding error")
             return None
 
+    @retry_with_reconnect
     async def generate(
         self, request: RequestSchema, history: HistorySchema,
     ) -> ResponseSchema:

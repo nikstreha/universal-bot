@@ -10,16 +10,15 @@ preview = true
 select = ["ALL"]
 
 ignore = [
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D107",
+    "D",
     "CPY001",
     "W292",
     "W293",
-    "COM812"
+    "COM812",
+    "INP001",
+    "UP042",
+    "S311",
+    "RUFF067"
 ]
 
 exclude = [

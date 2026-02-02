@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, BinaryIO
 
 from miniopy_async import Minio
 from src.core.config import settings
+from src.utils.connect_retry import retry_with_reconnect
 
 if TYPE_CHECKING:
     from src.schemas.content_types import ContentTypes
@@ -14,25 +15,27 @@ class _MinioClient:
     def __init__(self) -> None:
         self.client: Minio | None = None
 
-    def connect(self) -> None:
+    async def connect(self) -> None:
         if self.client is not None:
             return
         
-        self.client = Minio(
+        self.client: Minio = Minio(
             endpoint=settings.minio_endpoint,
             access_key=settings.MINIO_ROOT_USER,
             secret_key=settings.MINIO_ROOT_PASSWORD,
             secure=False,
         )
 
-        logger.info("Minio client connected")
+        logger.info("Minio client initialized")
 
+    @retry_with_reconnect
     async def check_or_create_bucket(self, bucket_name: str) -> None:
         if not await self.client.bucket_exists(bucket_name):
             await self.client.make_bucket(bucket_name)
             logger.info("Bucket %s created", bucket_name)
         logger.info("Bucket %s exists", bucket_name)
 
+    @retry_with_reconnect
     async def upload_file(
         self,
         bucket_name: str,
@@ -50,6 +53,7 @@ class _MinioClient:
 
         logger.info("File %s uploaded to bucket %s", object_name, bucket_name)
 
+    @retry_with_reconnect
     async def download_file(self, bucket_name: str, object_name: str) -> bytes:
         async with await self.client.get_object(
             bucket_name=bucket_name,

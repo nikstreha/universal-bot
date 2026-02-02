@@ -1,7 +1,10 @@
-import uuid
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    import uuid
 
 
 class MessageRole(str, Enum):
