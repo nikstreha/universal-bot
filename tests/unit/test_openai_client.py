@@ -5,7 +5,7 @@ from openai import AuthenticationError
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.clients.openai import OpenAIClient
+from src.clients.openai import get_openai_client
 from src.schemas.chat import (
     RequestSchema,
     HistorySchema,
@@ -17,7 +17,22 @@ from src.schemas.chat import (
 
 @pytest.fixture(scope="module")
 def openai_client():
-    return OpenAIClient()
+    with patch("src.clients.openai.AsyncOpenAI") as mock_openai:
+        mock_instance = MagicMock()
+
+        mock_instance.embeddings = AsyncMock()
+        mock_instance.embeddings.create = AsyncMock()
+
+        mock_instance.chat = AsyncMock()
+        mock_instance.chat.completions = AsyncMock()
+        mock_instance.chat.completions.create = AsyncMock()
+
+        mock_openai.return_value = mock_instance
+
+        client = get_openai_client()
+        client.client = mock_instance
+
+        return client
 
 
 @pytest.mark.asyncio

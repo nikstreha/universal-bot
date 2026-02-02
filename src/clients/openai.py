@@ -12,7 +12,7 @@ class _OpenAIClient:
     def __init__(self) -> None:
         self.client: AsyncOpenAI | None = None
 
-    async def connect(self) -> None:  # need to add retry and backoff
+    async def connect(self) -> None:
         if self.client is not None:
             return
         self.client = AsyncOpenAI(

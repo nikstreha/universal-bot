@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from src.clients.minio_client import get_minio_client
 from src.schemas.content_types import ContentTypes
@@ -7,8 +7,19 @@ from src.schemas.content_types import ContentTypes
 
 @pytest.fixture(scope="module")
 def minio_client():
-    with patch("src.clients.minio_client.Minio"):
-        return get_minio_client()
+    with patch("src.clients.minio_client.Minio") as mock_minio:
+        mock_instance = MagicMock()
+        mock_instance.bucket_exists = AsyncMock()
+        mock_instance.make_bucket = AsyncMock()
+        mock_instance.put_object = AsyncMock()
+        mock_instance.get_object = AsyncMock()
+
+        mock_minio.return_value = mock_instance
+
+        client = get_minio_client()
+        client.client = mock_instance
+
+        return client
 
 
 @pytest.mark.asyncio
