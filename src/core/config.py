@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     BOT_TOKEN: str
+    
     MODEL_TOKEN: str
     PROXYAPI_BASE_URL: str
     EMBEDDING_MODEL: str

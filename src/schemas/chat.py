@@ -2,8 +2,6 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-import uuid
-
 
 class MessageRole(str, Enum):
     USER = "user"
@@ -22,7 +20,7 @@ class HistorySchema(BaseModel):
 
 
 class BaseChatSchema(BaseModel):
-    user_id: uuid.UUID
+    user_id: int
     content: str = Field(..., max_length=10000)
 
 
