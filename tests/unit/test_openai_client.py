@@ -1,5 +1,4 @@
 import pytest
-import uuid
 
 from openai import AuthenticationError
 
@@ -61,7 +60,7 @@ async def test_embedding_empty_text(openai_client):
 
 @pytest.mark.asyncio
 async def test_generate_success(openai_client):
-    user_id = uuid.uuid4()
+    user_id: int = 123
     request = RequestSchema(
         user_id=user_id, content="Hello", temperature=0.7, max_tokens=100
     )
@@ -100,7 +99,7 @@ async def test_invalid_token_error(openai_client):
             body={"message": "Incorrect API key provided"},
         )
 
-        user_id = uuid.uuid4()
+        user_id: int = 123
         request = RequestSchema(user_id=user_id, content="Hello")
         history = HistorySchema(messages=[])
 
