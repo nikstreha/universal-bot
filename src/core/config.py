@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     MONGO_PORT: int
     MONGO_ROOT_USER: str
     MONGO_ROOT_PASSWORD: str
+    MONGO_DB_NAME: str
 
     MAX_HISTORY: int = 1000
 
