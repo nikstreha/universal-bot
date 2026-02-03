@@ -16,6 +16,6 @@ class UserRoles(AdminRoles):
 
 
 class UserBaseSchema(BaseModel):
-    id: int
+    user_id: int
     role: UserRoles
     username: str = Field(..., max_length=100)

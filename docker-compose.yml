@@ -37,6 +37,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
+      start_period: 30s
 
   mongo:
     image: mongo:8.2.4-noble
@@ -50,8 +51,19 @@ services:
       - "27017:27017"
     volumes:
       - db_data:/data/db
+      - mongot:/data/mongot
     networks:
       - db_network
+    healthcheck:
+      test: >
+        mongosh --quiet
+        -u $MONGO_INITDB_ROOT_USERNAME
+        -p $MONGO_INITDB_ROOT_PASSWORD
+        --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mongo-express:
     image: mongo-express
@@ -73,3 +85,4 @@ volumes:
   redis_data:
   minio_data:
   db_data:
+  mongot:
