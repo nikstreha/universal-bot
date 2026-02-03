@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     REDIS_USER: str
     REDIS_DB: int
 
+    MONGO_HOST: str
+    MONGO_PORT: int
+    MONGO_ROOT_USER: str
+    MONGO_ROOT_PASSWORD: str
+
     CONNECT_RETRIES: int = 3
     CONNECT_TIMEOUT: float = 3.0
     CONNECT_BACKOFF_BASE: float = 0.5
@@ -37,6 +42,10 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+    
+    @property
+    def mongo_url(self) -> str:
+        return f"mongodb://{self.MONGO_ROOT_USER}:{self.MONGO_ROOT_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}/?authSource=admin"
 
 
 settings = Settings()
