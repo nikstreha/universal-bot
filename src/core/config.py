@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     MONGO_ROOT_USER: str
     MONGO_ROOT_PASSWORD: str
 
+    MAX_HISTORY: int = 1000
+
     CONNECT_RETRIES: int = 3
     CONNECT_TIMEOUT: float = 3.0
     CONNECT_BACKOFF_BASE: float = 0.5
