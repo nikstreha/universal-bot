@@ -1,21 +1,20 @@
-from enum import Enum
-
 from pydantic import BaseModel, Field
 
-
-class MessageRole(str, Enum):
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
-    TOOL = "tool"
+from src.schemas.message_roles import MessageRoles
 
 
 class MessageSchema(BaseModel):
-    role: MessageRole
+    '''
+    Base schema of one message
+    '''
+    role: MessageRoles
     content: str = Field(None, max_length=10000)
 
 
 class HistorySchema(BaseModel):
+    '''
+    Schema of chat history
+    '''
     messages: list[MessageSchema] = Field(default_factory=list)
 
 
