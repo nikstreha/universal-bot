@@ -8,13 +8,8 @@ from api.telegram.router.admin_handlers import router
 from core.config import settings
 
 
-
-
-
-
 async def main():
     dp = Dispatcher()
-
     dp.include_router(router)
 
     logging.basicConfig(level=logging.DEBUG)
