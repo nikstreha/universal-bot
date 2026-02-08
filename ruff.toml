@@ -18,7 +18,6 @@ ignore = [
     "INP001",
     "UP042",
     "S311",
-    "RUFF067"
 ]
 
 exclude = [

@@ -1,12 +1,11 @@
 from beanie import Document
 from beanie.operators import Push
 from pydantic import Field
-
 from src.core.config import settings
-
 from src.schemas.chat import HistorySchema
 from src.schemas.db_chat import DBHistorySchema, DBMessageSchema
 from src.schemas.user import UserBaseSchema
+
 
 class Chat(Document):
     user: UserBaseSchema
