@@ -7,8 +7,13 @@ class UserRoles(str, Enum):
     TEMP_ADMIN = "temp_admin"
     USER = "user"
     TEMP_USER = "temp_user"
+    BANNED = "banned"
     OTHER = "other"
 
     @classmethod
-    def is_admin(cls, role: "UserRoles") -> bool:
-        return role in (cls.ADMIN, cls.TEMP_ADMIN, cls.SUPERADMIN)
+    def is_admin(cls, role: UserRoles) -> bool:
+        return role in {cls.ADMIN, cls.TEMP_ADMIN, cls.SUPERADMIN}
+    
+    @classmethod
+    def is_banned(cls, role: UserRoles) -> bool:
+        return role == cls.BANNED

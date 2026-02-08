@@ -6,7 +6,7 @@ from src.api.telegram.router.admin_handlers import router
 from src.core.config import settings
 
 
-async def main():
+async def register_bot() -> None:
     dp = Dispatcher()
     dp.include_router(router)
 
@@ -16,4 +16,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(register_bot())
