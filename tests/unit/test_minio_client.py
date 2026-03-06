@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.clients.minio_client import get_minio_client
-from src.schemas.content_types import ContentTypes
+from backend_component.infrastructure.minio.minio_client import get_minio_client
+from backend_component.application.dto.content_types import ContentTypes
 
 
 @pytest.fixture(scope="module")

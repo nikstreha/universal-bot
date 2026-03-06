@@ -4,7 +4,7 @@ from openai import AuthenticationError
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.clients.openai import get_openai_client
+from backend_component.infrastructure.openai.openai import get_openai_client
 from src.schemas.chat import (
     RequestSchema,
     HistorySchema,
