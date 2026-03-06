@@ -1,0 +1,44 @@
+target-version = "py314"
+ 
+line-length = 100
+indent-width = 4
+ 
+src = ["src"]
+ 
+[lint]
+preview = true
+select = ["ALL"]
+
+ignore = [
+    "D",
+    "CPY001",
+    "W292",
+    "W293",
+    "COM812",
+    "INP001",
+    "UP042",
+    "S311",
+    "TC001",
+    "TC002",
+    "TC003",
+    "I001",
+    "ANN401",
+    "PLR0911",
+]
+
+exclude = [
+    "tests/**",
+]
+
+fixable = [
+    "I",
+]
+ 
+
+[format]
+quote-style = "double"
+indent-style = "space"
+ 
+
+[lint.flake8-bandit]
+check-typed-exception = true
