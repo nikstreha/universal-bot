@@ -40,9 +40,5 @@ class User(Entity[UserId]):
         self.role = new_role
         self._touch()
 
-    def ban(self) -> None:
-        self.role = UserRole.BANNED
-        self._touch()
-
     def _touch(self) -> None:
         self.touched_at = datetime.now(UTC)
