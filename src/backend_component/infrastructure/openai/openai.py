@@ -2,8 +2,6 @@ import logging
 
 from openai import AsyncOpenAI
 from backend_component.composition.configuration.config import settings
-from src.schemas.chat import HistorySchema, RequestSchema, ResponseSchema
-from src.utils.connect_retry import retry_with_reconnect
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,6 @@ class _OpenAIClient:
             api_key=settings.MODEL_TOKEN, base_url=settings.PROXYAPI_BASE_URL,
         )
 
-    @retry_with_reconnect
     async def embedding(
         self, text: str, model: str = settings.EMBEDDING_MODEL,
     ) -> list[float] | None:
@@ -38,7 +35,6 @@ class _OpenAIClient:
             logger.exception("OpenAI embedding error")
             return None
 
-    @retry_with_reconnect
     async def generate(
         self, request: RequestSchema, history: HistorySchema,
     ) -> ResponseSchema:

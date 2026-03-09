@@ -20,11 +20,11 @@ class UserWriter:
         return UserMapper.to_entity(doc)
 
     async def replace(self, user: User) -> None:
-        doc = UserMapper.to_document(user).model_dump()
+        doc = UserMapper.to_document(user)
 
         await self.collection.replace_one(
-            {"_id": doc["_id"]},
-            doc,
+            {"_id": doc.id_},
+            doc.model_dump(),
         )
     
     async def update_role(
