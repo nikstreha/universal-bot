@@ -1,12 +1,12 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
+from src.universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
 from universal_bot.domain.entity.chat import MyChat
 from universal_bot.domain.value_object.message.message import Message
 from universal_bot.domain.value_object.user.id import UserId
 from universal_bot.infrastructure.mongodb.collections import Collections
 from universal_bot.infrastructure.mongodb.mapper.chat import ChatMapper
 from universal_bot.infrastructure.mongodb.mapper.message import MessageMapper
-from src.universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
 
 
 class MyChatWriter(IMyChatWriter):
@@ -31,7 +31,10 @@ class MyChatWriter(IMyChatWriter):
 
         await self.collection.update_one(
             {"user_id": user_id.value},
-            {"$push": {"messages": message_doc}, "$set": {"updated_at": message.created_at}},
+            {
+                "$push": {"messages": message_doc},
+                "$set": {"updated_at": message.created_at},
+            },
         )
 
     async def create(self, chat: MyChat) -> None:

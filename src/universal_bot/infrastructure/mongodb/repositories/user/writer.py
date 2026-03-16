@@ -1,13 +1,13 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
+from src.universal_bot.application.port.db.repositories.user.writer import (
+    IUserWriter,
+)
 from universal_bot.domain.entity.user import User
 from universal_bot.domain.enum.user.role import UserRole
 from universal_bot.domain.value_object.user.id import UserId
 from universal_bot.infrastructure.mongodb.collections import Collections
 from universal_bot.infrastructure.mongodb.mapper.user import UserMapper
-from src.universal_bot.application.port.db.repositories.user.writer import (
-    IUserWriter,
-)
 
 
 class UserWriter(IUserWriter):

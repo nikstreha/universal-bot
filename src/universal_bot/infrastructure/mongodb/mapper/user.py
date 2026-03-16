@@ -9,10 +9,10 @@ class UserMapper:
     @staticmethod
     def to_document(user: User) -> UserDocument:
         return UserDocument(
-            id_=user.id_.value,
-            role=user.role.value,
+            _id=user.id_.value,
+            role=user.role,
             touched_at=user.touched_at,
-            user_name=user.username.value,
+            user_name=user.username.value if user.username else None,
         )
 
     @staticmethod
@@ -21,5 +21,5 @@ class UserMapper:
             id_=UserId(doc.id_),
             role=UserRole(doc.role),
             touched_at=doc.touched_at,
-            username=UserName(doc.user_name),
+            username=UserName(doc.user_name) if doc.user_name else None,
         )

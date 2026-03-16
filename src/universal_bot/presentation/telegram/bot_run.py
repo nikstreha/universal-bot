@@ -3,7 +3,6 @@ import logging
 
 from aiogram import Bot, Dispatcher
 
-from universal_bot.composition.configuration.config import settings
 from universal_bot.presentation.telegram.router.admin_handlers import router
 
 

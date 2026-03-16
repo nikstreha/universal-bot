@@ -7,7 +7,7 @@ class MessageMapper:
     def to_document(message: Message) -> MessageDocument:
         return MessageDocument(
             id_=message.id_.value,
-            role=message.role.value,
+            role=message.role,
             content=message.content.value,
             created_at=message.created_at,
             reply_from=message.reply_from.value if message.reply_from else None,

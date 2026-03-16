@@ -2,13 +2,13 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from src.universal_bot.domain.enum.user.role import UserRole
+from src.universal_bot.domain.enum.message.role import MessageRole
 
 
 class MessageDocument(BaseModel):
-    id: str
-    role: UserRole
+    id_: int
+    role: MessageRole
     content: str
     token_used: int | None = None
-    reply_from: str | None = None
+    reply_from: int | None = None
     created_at: datetime

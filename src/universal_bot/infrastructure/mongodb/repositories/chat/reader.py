@@ -1,8 +1,9 @@
 from pymongo.asynchronous.database import AsyncDatabase
+
+from src.universal_bot.application.port.db.repositories.chat.reader import IMyChatReader
 from universal_bot.infrastructure.mongodb.collections import Collections
 from universal_bot.infrastructure.mongodb.documents.chat import ChatDocument
 from universal_bot.infrastructure.mongodb.documents.message import MessageDocument
-from src.universal_bot.application.port.db.repositories.chat.reader import IMyChatReader
 
 
 class MyChatReader(IMyChatReader):
@@ -17,7 +18,9 @@ class MyChatReader(IMyChatReader):
 
         return ChatDocument.model_validate(doc)
 
-    async def get_messages(self, user_id: str, limit: int = 20) -> list[MessageDocument]:
+    async def get_messages(
+        self, user_id: str, limit: int = 20
+    ) -> list[MessageDocument]:
         doc = await self.collection.find_one(
             {"user_id": user_id},
             {"messages": {"$slice": -limit}},

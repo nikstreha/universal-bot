@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardRemove
 
 # from src.api.managers.admin_manager import get_admins
-from src.api.telegram.keyboards.admin_keyboard import (
+from universal_bot.presentation.telegram.keyboards.admin_keyboard import (
     AdminButgtons,
     get_admin_keyboard,
 )
@@ -24,10 +24,13 @@ async def remove_user(message: types.Message) -> None:
 
 @router.message(F.text == AdminButgtons.STOP_ADMIN)
 async def stop_admin(message: types.Message) -> None:
-    await message.answer(reply_markup=ReplyKeyboardRemove())
+    await message.answer(text="Stop admin", reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(Command("admin"))
 async def handle_admin(message: types.Message) -> None:
-    print(message.from_user.id)
+    if message.from_user:
+        user_id = message.from_user.id
+        print(user_id)
+
     await message.answer(text="You are an admin", reply_markup=get_admin_keyboard())

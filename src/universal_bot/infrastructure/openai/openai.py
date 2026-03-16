@@ -37,12 +37,14 @@ class OpenAIProvider(IAIProvider):
     ) -> ResponseDTO:
         try:
             openai_messages = cast(
-                list[ChatCompletionMessageParam],
-                [asdict(m) for m in history.messages]
+                list[ChatCompletionMessageParam], [asdict(m) for m in history.messages]
             )
 
             openai_messages.append(
-                cast(ChatCompletionMessageParam, asdict(MessageDTO(role=Role.USER, content=request.content)))
+                cast(
+                    ChatCompletionMessageParam,
+                    asdict(MessageDTO(role=Role.USER, content=request.content)),
+                )
             )
 
             resp = await self.client.chat.completions.create(

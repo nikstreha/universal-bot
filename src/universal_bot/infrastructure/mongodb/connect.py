@@ -12,5 +12,5 @@ class MongoConnector:
         self.db = self.client[self.db_name]
         return self.db
 
-    def down(self) -> None:
-        self.client.close()
+    async def down(self) -> None:
+        await self.client.close()

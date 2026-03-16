@@ -40,6 +40,9 @@ class MyChat(Entity[ChatId]):
         )
 
     def add_message(self, message: Message) -> None:
+        if not self.messages:
+            self.messages = []
+
         self.messages.append(message)
         self._touch()
 
