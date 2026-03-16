@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from dishka import Provider, Scope, provide
 from pymongo.asynchronous.database import AsyncDatabase
 
+from src.universal_bot.application.port.ai_chat.ai_provider import IAIProvider
 from src.universal_bot.application.port.cache.cache_provider import ICacheProvider
 from src.universal_bot.application.port.db.repositories.chat.reader import IMyChatReader
 from src.universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
@@ -20,7 +21,20 @@ from src.universal_bot.infrastructure.mongodb.repositories.chat.writer import (
 )
 from src.universal_bot.infrastructure.mongodb.repositories.user.reader import UserReader
 from src.universal_bot.infrastructure.mongodb.repositories.user.writer import UserWriter
+from src.universal_bot.infrastructure.openai.openai_provider import OpenAIProvider
 from src.universal_bot.infrastructure.redis.redis_provider import RedisProvider
+
+
+class AIProvider(Provider):
+    scope = Scope.APP
+
+    @provide
+    async def get_ai(self, configuration: Settings) -> AsyncIterator[IAIProvider]:
+        async with OpenAIProvider(
+            model_token=configuration.MODEL_TOKEN,
+            base_url=configuration.PROXYAPI_BASE_URL,
+        ) as ai:
+            yield ai
 
 
 class StorageProvider(Provider):

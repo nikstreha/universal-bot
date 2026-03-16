@@ -6,17 +6,24 @@ from pymongo import AsyncMongoClient
 class MongoConnector:
     def __init__(self, url: str) -> None:
         self.url = url
+        self._client: AsyncMongoClient | None = None
 
-    def up(self) -> AsyncMongoClient:
-        self._client = AsyncMongoClient(self.url)
+    @property
+    def client(self) -> AsyncMongoClient:
+        if self._client is None:
+            raise RuntimeError("MongoConnector is not connected. Call up() first.")
         return self._client
 
+    def up(self) -> None:
+        self._client = AsyncMongoClient(self.url)
+
     async def down(self) -> None:
-        await self._client.close()
+        await self.client.close()
+        self._client = None
 
     async def __aenter__(self) -> AsyncMongoClient:
         self.up()
-        return self._client
+        return self.client
 
     async def __aexit__(
         self,

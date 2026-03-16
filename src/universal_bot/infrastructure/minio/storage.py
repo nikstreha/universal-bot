@@ -19,12 +19,16 @@ class MinioProvider(IStorageProvider):
         self.endpoint = endpoint
         self.access_key = user
         self.secret_key = password
+        self._client: Minio | None = None
+
+    @property
+    def client(self) -> Minio:
+        if self._client is None:
+            raise RuntimeError("MinioProvider is not connected. Call up() first.")
+        return self._client
 
     async def up(self) -> None:
-        if self.client is not None:
-            return
-
-        self.client = Minio(
+        self._client = Minio(
             endpoint=self.endpoint,
             access_key=self.access_key,
             secret_key=self.secret_key,
@@ -34,10 +38,9 @@ class MinioProvider(IStorageProvider):
         logger.info("Minio client initialized")
 
     async def down(self) -> None:
-        if not self.client:
-            return
-
         await self.client.close_session()
+        self._client = None
+
         logger.info("Minio client closed")
 
     async def check_or_create_bucket(self, bucket_name: str) -> None:
