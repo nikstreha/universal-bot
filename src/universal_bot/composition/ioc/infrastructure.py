@@ -89,3 +89,13 @@ class DatabaseRepositoryProvider(Provider):
     @provide
     def get_message_writer(self, db: AsyncDatabase) -> IMyChatWriter:
         return MyChatWriter(db)
+
+
+def _infrastructure_provider() -> tuple[Provider, ...]:
+    return (
+        AIProvider(),
+        CacheProvider(),
+        DatabaseProvider(),
+        DatabaseRepositoryProvider(),
+        StorageProvider(),
+    )
