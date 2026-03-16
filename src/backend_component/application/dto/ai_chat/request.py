@@ -9,6 +9,7 @@ class RequestDTO:
     content: str
     max_tokens: int
     temperature: float
+    chat_model: str = "gpt-5-mini"
 
 
 @dataclass(frozen=True)

@@ -49,6 +49,3 @@ class Settings(BaseSettings):
     @property
     def mongo_url(self) -> str:
         return f"mongodb://{self.MONGO_ROOT_USER}:{self.MONGO_ROOT_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}/?authSource=admin"
-
-
-settings = Settings()

@@ -1,30 +1,41 @@
 import logging
 from types import TracebackType
-from typing import BinaryIO
 
 from miniopy_async import Minio
-from backend_component.composition.configuration.config import settings
-from src.backend_component.application.dto.ai_chat.content_types import ContentTypes
+from backend_component.application.dto.storage.delete_file import DeleteFileDTO
+from backend_component.application.dto.storage.put_file import PutFileDTO
+from backend_component.application.dto.storage.get_file import DownloadDTO, GetPersignedUrlDTO
+from backend_component.application.storage.storage_provider import IStorageProvider
 
 logger = logging.getLogger(__name__)
 
 
-class MinioProvider:
-    def __init__(self) -> None:
+class MinioProvider(IStorageProvider):
+    def __init__(self, endpoint: str, user: str, password: str) -> None:
         self.client: Minio | None = None
+        self.endpoint = endpoint
+        self.access_key = user
+        self.secret_key = password
 
     async def up(self) -> None:
         if self.client is not None:
             return
         
         self.client = Minio(
-            endpoint=settings.minio_endpoint,
-            access_key=settings.MINIO_ROOT_USER,
-            secret_key=settings.MINIO_ROOT_PASSWORD,
+            endpoint=self.endpoint,
+            access_key=self.access_key,
+            secret_key=self.secret_key,
             secure=False,
         )
 
         logger.info("Minio client initialized")
+
+    async def down(self) -> None:
+        if not self.client:
+            return
+        
+        self.client.close_session()
+        logger.info("Minio client closed")
 
     async def check_or_create_bucket(self, bucket_name: str) -> None:
         if not await self.client.bucket_exists(bucket_name):
@@ -33,51 +44,42 @@ class MinioProvider:
         else:
             logger.info("Bucket %s already exists", bucket_name)
 
-    async def upload_file(
-        self,
-        bucket_name: str,
-        object_name: str,
-        data: BinaryIO,
-        content_type: ContentTypes,
-    ) -> None:
+    async def upload_file(self, file: PutFileDTO) -> None:
         await self.client.put_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
-            data=data,
+            bucket_name=file.bucket_name,
+            object_name=file.object_name,
+            data=file.data,
             length=-1,
-            content_type=content_type.value,
+            content_type=file.content_type.value,
         )
 
-        logger.info("File %s uploaded to bucket %s", object_name, bucket_name)
+        logger.debug("File %s uploaded to bucket %s", file.object_name, file.bucket_name)
 
-    async def download_file(self, bucket_name: str, object_name: str) -> bytes:
+    async def download_file(self, download_object: DownloadDTO) -> bytes:
         async with await self.client.get_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
+            bucket_name=download_object.bucket_name,
+            object_name=download_object.object_name,
         ) as obj:
             data = await obj.read()
 
-        logger.info(
-            "File %s downloaded from bucket %s", object_name, bucket_name,
+        logger.debug(
+            "File %s downloaded from bucket %s",
+            download_object.object_name,
+            download_object.bucket_name,
         )
 
         return data
     
-    async def delete_file(self, bucket_name: str, object_name: str) -> None:
-        await self.client.remove_object(bucket_name, object_name)
+    async def delete_file(self, file: DeleteFileDTO) -> None:
+        await self.client.remove_object(file.bucket_name, file.object_name)
 
-        logger.info("File %s deleted from bucket %s", object_name, bucket_name)
+        logger.debug("File %s deleted from bucket %s", file.object_name, file.bucket_name)
 
-    async def get_presigned_url(
-        self,
-        bucket_name: str,
-        object_name: str,
-        expires: int = 3600,
-    ) -> str:
+    async def get_presigned_url(self, presigned_url: GetPersignedUrlDTO) -> str:
         return await self.client.presigned_get_object(
-            bucket_name,
-            object_name,
-            expires=expires,
+            bucket_name=presigned_url.bucket_name,
+            object_name=presigned_url.object_name,
+            expires=presigned_url.expires,
         )
 
     async def __aenter__(self) -> MinioProvider:
@@ -90,4 +92,4 @@ class MinioProvider:
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        pass
+        await self.down()
