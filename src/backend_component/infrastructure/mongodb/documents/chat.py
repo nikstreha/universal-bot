@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from backend_component.infrastructure.mongodb.models.message import MessageDocument
+from backend_component.infrastructure.mongodb.documents.message import MessageDocument
 
 
 class ChatDocument(BaseModel):

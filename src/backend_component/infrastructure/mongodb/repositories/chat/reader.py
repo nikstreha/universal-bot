@@ -1,7 +1,7 @@
 from pymongo.asynchronous.database import AsyncDatabase
 from backend_component.infrastructure.mongodb.collections import Collections
-from backend_component.infrastructure.mongodb.models.chat import ChatDocument
-from backend_component.infrastructure.mongodb.models.message import MessageDocument
+from backend_component.infrastructure.mongodb.documents.chat import ChatDocument
+from backend_component.infrastructure.mongodb.documents.message import MessageDocument
 
 
 class MyChatReader:

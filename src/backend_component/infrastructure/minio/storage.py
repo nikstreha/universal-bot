@@ -1,17 +1,15 @@
 import logging
 from types import TracebackType
-from typing import TYPE_CHECKING, BinaryIO
+from typing import BinaryIO
 
 from miniopy_async import Minio
 from backend_component.composition.configuration.config import settings
-
-if TYPE_CHECKING:
-    from backend_component.application.dto.content_types import ContentTypes
+from src.backend_component.application.dto.ai_chat.content_types import ContentTypes
 
 logger = logging.getLogger(__name__)
 
 
-class MinioClientProvider:
+class MinioProvider:
     def __init__(self) -> None:
         self.client: Minio | None = None
 
@@ -82,7 +80,7 @@ class MinioClientProvider:
             expires=expires,
         )
 
-    async def __aenter__(self) -> MinioClientProvider:
+    async def __aenter__(self) -> MinioProvider:
         await self.up()
         return self
 

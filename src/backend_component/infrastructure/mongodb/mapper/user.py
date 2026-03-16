@@ -2,7 +2,7 @@ from backend_component.domain.entity.user import User
 from backend_component.domain.enum.user.role import UserRole
 from backend_component.domain.value_object.user.id import UserId
 from backend_component.domain.value_object.user.username import UserName
-from backend_component.infrastructure.mongodb.models.user import UserDocument
+from backend_component.infrastructure.mongodb.documents.user import UserDocument
 
 
 class UserMapper:

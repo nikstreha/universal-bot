@@ -1,5 +1,5 @@
 from backend_component.domain.value_object.message.message import Message
-from backend_component.infrastructure.mongodb.models.message import MessageDocument
+from backend_component.infrastructure.mongodb.documents.message import MessageDocument
 
 
 class MessageMapper:

@@ -1,6 +1,6 @@
 from backend_component.domain.entity.chat import MyChat
 from backend_component.infrastructure.mongodb.mapper.message import MessageMapper
-from backend_component.infrastructure.mongodb.models.chat import ChatDocument
+from backend_component.infrastructure.mongodb.documents.chat import ChatDocument
 
 
 class ChatMapper:
