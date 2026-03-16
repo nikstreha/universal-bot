@@ -1,16 +1,34 @@
+from types import TracebackType
+
 from pymongo import AsyncMongoClient
-from pymongo.asynchronous.database import AsyncDatabase
 
 
 class MongoConnector:
-    def __init__(self, url: str, db_name: str) -> None:
+    def __init__(self, url: str) -> None:
         self.url = url
-        self.db_name = db_name
+        self._client: AsyncMongoClient | None = None
 
-    def up(self) -> AsyncDatabase:
-        self.client = AsyncMongoClient(self.url)
-        self.db = self.client[self.db_name]
-        return self.db
+    @property
+    def client(self) -> AsyncMongoClient:
+        if self._client is None:
+            raise RuntimeError("MongoConnector is not connected. Call up() first.")
+        return self._client
+
+    def up(self) -> None:
+        self._client = AsyncMongoClient(self.url)
 
     async def down(self) -> None:
         await self.client.close()
+        self._client = None
+
+    async def __aenter__(self) -> AsyncMongoClient:
+        self.up()
+        return self.client
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        await self.down()

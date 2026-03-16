@@ -12,13 +12,16 @@ logger = logging.getLogger(__name__)
 class RedisProvider(ICacheProvider):
     def __init__(self, url: str) -> None:
         self.url = url
-        self.redis: Redis | None = None
+        self._redis: Redis | None = None
 
-    async def connect(self) -> None:
-        if self.redis is not None:
-            return
+    @property
+    def redis(self) -> Redis:
+        if self.redis is None:
+            raise RuntimeError("RedisProvider is not connected. Call up() first.")
+        return self.redis
 
-        self.redis = Redis.from_url(
+    async def up(self) -> None:
+        self._redis = Redis.from_url(
             url=self.url,
             decode_responses=True,
         )
@@ -29,14 +32,13 @@ class RedisProvider(ICacheProvider):
         except Exception:
             logger.exception("Redis connection error")
 
-    async def close(self) -> None:
-        if self.redis:
-            await self.redis.aclose()
-            self.redis = None
-            logger.info("Redis connection closed")
+    async def down(self) -> None:
+        await self.redis.aclose()
+        self._redis = None
+        logger.info("Redis connection closed")
 
     async def __aenter__(self) -> RedisProvider:
-        await self.connect()
+        await self.up()
         return self
 
     async def __aexit__(
@@ -45,16 +47,10 @@ class RedisProvider(ICacheProvider):
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        await self.close()
+        await self.down()
 
     async def get(self, key: str) -> str | None:
-        if not self.redis:
-            raise RuntimeError("Redis client is not connected. Call connect() first.")
-
         return await self.redis.get(key)
 
     async def set(self, cache_data: CacheDataDTO) -> None:
-        if not self.redis:
-            raise RuntimeError("Redis client is not connected.")
-
         await self.redis.set(cache_data.key, cache_data.value, ex=cache_data.expire)

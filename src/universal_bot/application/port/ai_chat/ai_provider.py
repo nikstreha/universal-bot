@@ -9,5 +9,5 @@ class IAIProvider(ABC):
     async def generate(
         self,
         request: RequestDTO,
-        history: HistoryDTO,
+        history: HistoryDTO | None = None,
     ) -> ResponseDTO: ...
