@@ -23,8 +23,6 @@ class OpenAIProvider(IAIProvider):
         self.base_url = base_url
 
     async def connect(self) -> None:
-        if self.client is not None:
-            return
         self.client = AsyncOpenAI(
             api_key=self.model_token,
             base_url=self.base_url,
@@ -33,12 +31,16 @@ class OpenAIProvider(IAIProvider):
     async def generate(
         self,
         request: RequestDTO,
-        history: HistoryDTO,
+        history: HistoryDTO | None = None,
     ) -> ResponseDTO:
         try:
-            openai_messages = cast(
-                list[ChatCompletionMessageParam], [asdict(m) for m in history.messages]
-            )
+            if history:
+                openai_messages = cast(
+                    list[ChatCompletionMessageParam],
+                    [asdict(m) for m in history.messages] if history else [],
+                )
+            else:
+                openai_messages = []
 
             openai_messages.append(
                 cast(
@@ -50,8 +52,7 @@ class OpenAIProvider(IAIProvider):
             resp = await self.client.chat.completions.create(
                 model=request.chat_model,
                 messages=openai_messages,
-                max_tokens=request.max_tokens,
-                temperature=request.temperature,
+                max_completion_tokens=request.max_tokens,
             )
 
             content = resp.choices[0].message.content or ""

@@ -47,7 +47,7 @@ class CacheProvider(Provider):
             yield redis
 
 
-class DataBaseProvider(Provider):
+class DatabaseProvider(Provider):
     scope = Scope.APP
 
     @provide
