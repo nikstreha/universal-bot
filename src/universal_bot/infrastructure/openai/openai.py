@@ -37,7 +37,7 @@ class OpenAIProvider(IAIProvider):
     ) -> ResponseDTO:
         try:
             openai_messages = cast(
-                list[ChatCompletionMessageParam], 
+                list[ChatCompletionMessageParam],
                 [asdict(m) for m in history.messages]
             )
 
