@@ -49,6 +49,7 @@ class StorageProvider(Provider):
             user=configuration.MINIO_ROOT_USER,
             password=configuration.MINIO_ROOT_PASSWORD,
         ) as minio:
+            await minio.check_or_create_bucket(configuration.MINIO_BUCKET)
             yield minio
 
 

@@ -1,7 +1,9 @@
 import logging
 from types import TracebackType
 
+import aiohttp
 from miniopy_async.api import Minio
+from miniopy_async.error import S3Error
 
 from universal_bot.application.dto.storage.delete_file import DeleteFileDTO
 from universal_bot.application.dto.storage.get_file import (
@@ -54,18 +56,32 @@ class MinioProvider(IStorageProvider):
         else:
             logger.info("Bucket %s already exists", bucket_name)
 
-    async def upload_file(self, file: PutFileDTO) -> None:
-        await self.client.put_object(
-            bucket_name=file.bucket_name,
-            object_name=file.object_name,
-            data=file.data,
-            length=-1,
-            content_type=file.content_type.value,
-        )
+    async def upload_file(self, file: PutFileDTO) -> bool:
+        try:
+            await self.client.put_object(
+                bucket_name=file.bucket_name,
+                object_name=file.object_name,
+                data=file.data,
+                length=-1,
+                content_type=file.content_type.value,
+            )
 
-        logger.debug(
-            "File %s uploaded to bucket %s", file.object_name, file.bucket_name
-        )
+            logger.debug(
+                "File %s uploaded to bucket %s", file.object_name, file.bucket_name
+            )
+
+            return True
+
+        except S3Error as e:
+            logger.error("Minio S3 error during upload %s: %s", file.object_name, e)
+
+        except aiohttp.ClientError as e:
+            logger.error("Network error during upload %s: %s", file.object_name, e)
+
+        except Exception as e:
+            logger.critical("Unknown error during upload %s: %s", file.object_name, e)
+
+        return False
 
     async def download_file(self, download_object: DownloadDTO) -> bytes:
         async with await self.client.get_object(
