@@ -27,7 +27,7 @@ class RedisProvider(ICacheProvider):
         )
 
         try:
-            await self.redis.ping()  # pyright: ignore[reportGeneralTypeIssues]
+            await self.redis.ping()  # type: ignore
             logger.info("Redis connection established")
         except Exception:
             logger.exception("Redis connection error")
@@ -54,3 +54,6 @@ class RedisProvider(ICacheProvider):
 
     async def set(self, cache_data: CacheDataDTO) -> None:
         await self.redis.set(cache_data.key, cache_data.value, ex=cache_data.expire)
+
+    async def delete(self, key: str) -> None:
+        await self.redis.delete(key)

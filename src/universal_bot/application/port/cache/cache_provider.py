@@ -9,3 +9,6 @@ class ICacheProvider(ABC):
 
     @abstractmethod
     async def set(self, cache_data: CacheDataDTO) -> None: ...
+
+    @abstractmethod
+    async def delete(self, key: str) -> None: ...

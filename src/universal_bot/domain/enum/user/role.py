@@ -29,6 +29,9 @@ class UserRole(StrEnum):
             case UserRole.OTHER:
                 return 0
 
+    def is_temp(self) -> bool:
+        return self in (UserRole.TEMP_ADMIN, UserRole.TEMP_USER)
+
     def is_admin(self) -> bool:
         return self.weight >= self.TEMP_ADMIN.weight
 
