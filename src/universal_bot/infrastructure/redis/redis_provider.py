@@ -54,3 +54,6 @@ class RedisProvider(ICacheProvider):
 
     async def set(self, cache_data: CacheDataDTO) -> None:
         await self.redis.set(cache_data.key, cache_data.value, ex=cache_data.expire)
+
+    async def delete(self, key: str) -> None:
+        await self.redis.delete(key)
