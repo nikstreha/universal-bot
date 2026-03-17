@@ -6,7 +6,11 @@ from miniopy_async.api import Minio
 from universal_bot.application.dto.storage.delete_file import DeleteFileDTO
 from universal_bot.application.dto.storage.get_file import (
     DownloadDTO,
+    FolderDTO,
+    GetFilesFromDirectoryDTO,
+    GetFilesFromDirectoryResponseDTO,
     GetPersignedUrlDTO,
+    ItemDTO,
 )
 from universal_bot.application.dto.storage.put_file import PutFileDTO
 from universal_bot.application.port.storage.storage_provider import IStorageProvider
@@ -90,6 +94,57 @@ class MinioProvider(IStorageProvider):
             bucket_name=presigned_url.bucket_name,
             object_name=presigned_url.object_name,
             expires=presigned_url.expires,
+        )
+
+    async def get_files_from_directory(
+        self, files_request: GetFilesFromDirectoryDTO
+    ) -> GetFilesFromDirectoryResponseDTO:
+        objects_iter = await self.client.list_objects(
+            files_request.bucket_name,
+            prefix=files_request.prefix,
+            recursive=False,
+            start_after=files_request.offset_name,
+        )
+
+        folders = []
+        items = []
+
+        count = 0
+        last_processed_key = None
+
+        for obj in objects_iter:
+            if count >= files_request.limit:
+                break
+
+            last_processed_key = obj.object_name
+
+            if obj.object_name:
+                if obj.is_dir:
+                    folders.append(
+                        FolderDTO(
+                            name=obj.object_name.rstrip("/").split("/")[-1],
+                            path=obj.object_name,
+                        )
+                    )
+                else:
+                    url = await self.client.presigned_get_object(
+                        bucket_name=files_request.bucket_name,
+                        object_name=obj.object_name,
+                    )
+                    items.append(
+                        ItemDTO(
+                            name=obj.object_name.split("/")[-1],
+                            url=url,
+                        )
+                    )
+
+            count += 1
+
+        return GetFilesFromDirectoryResponseDTO(
+            folders=folders,
+            items=items,
+            has_more=count >= files_request.limit,
+            last_processed_key=last_processed_key,
         )
 
     async def __aenter__(self) -> MinioProvider:

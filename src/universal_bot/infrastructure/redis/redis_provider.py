@@ -27,7 +27,7 @@ class RedisProvider(ICacheProvider):
         )
 
         try:
-            await self.redis.ping()  # pyright: ignore[reportGeneralTypeIssues]
+            await self.redis.ping()  # type: ignore
             logger.info("Redis connection established")
         except Exception:
             logger.exception("Redis connection error")
