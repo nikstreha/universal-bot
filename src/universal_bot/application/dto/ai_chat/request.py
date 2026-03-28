@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.universal_bot.domain.enum.message.role import MessageRole as Role
+from universal_bot.domain.enum.message.role import MessageRole as Role
 
 
 @dataclass(frozen=True)

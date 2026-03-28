@@ -1,6 +1,9 @@
+import logging
 from types import TracebackType
 
 from pymongo import AsyncMongoClient
+
+logger = logging.getLogger(__name__)
 
 
 class MongoConnector:
@@ -14,15 +17,17 @@ class MongoConnector:
             raise RuntimeError("MongoConnector is not connected. Call up() first.")
         return self._client
 
-    def up(self) -> None:
+    async def up(self) -> None:
         self._client = AsyncMongoClient(self.url)
+        await self._client.admin.command("ping")
+        logger.info("MongoDB connection established")
 
     async def down(self) -> None:
         await self.client.close()
         self._client = None
 
     async def __aenter__(self) -> AsyncMongoClient:
-        self.up()
+        await self.up()
         return self.client
 
     async def __aexit__(

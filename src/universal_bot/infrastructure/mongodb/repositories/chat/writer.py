@@ -1,6 +1,6 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
-from src.universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
+from universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
 from universal_bot.domain.entity.chat import MyChat
 from universal_bot.domain.value_object.message.message import Message
 from universal_bot.domain.value_object.user.id import UserId
@@ -27,7 +27,7 @@ class MyChatWriter(IMyChatWriter):
         user_id: UserId,
         message: Message,
     ) -> None:
-        message_doc = MessageMapper.to_document(message).model_dump
+        message_doc = MessageMapper.to_document(message).model_dump()
 
         await self.collection.update_one(
             {"user_id": user_id.value},

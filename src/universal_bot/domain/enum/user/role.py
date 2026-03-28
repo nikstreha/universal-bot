@@ -33,10 +33,10 @@ class UserRole(StrEnum):
         return self in (UserRole.TEMP_ADMIN, UserRole.TEMP_USER)
 
     def is_admin(self) -> bool:
-        return self.weight >= self.TEMP_ADMIN.weight
+        return self >= self.TEMP_ADMIN
 
     def is_permitted(self) -> bool:
-        return self.weight >= self.TEMP_USER.weight
+        return self >= self.TEMP_USER
 
     def __gt__(self, other: Any) -> bool:
         if not isinstance(other, UserRole):

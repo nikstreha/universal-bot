@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from src.universal_bot.domain.enum.message.role import MessageRole
+from universal_bot.domain.enum.message.role import MessageRole
 
 
 class MessageDocument(BaseModel):
