@@ -1,4 +1,5 @@
 from pymongo.asynchronous.database import AsyncDatabase
+from pymongo.errors import DuplicateKeyError
 
 from src.universal_bot.application.port.db.repositories.user.writer import (
     IUserWriter,
@@ -30,24 +31,20 @@ class UserWriter(IUserWriter):
             doc.model_dump(),
         )
 
-    async def update_role(
-        self,
-        user_id: UserId,
-        new_role: UserRole,
-    ) -> None:
-        user = await self.get_by_id(user_id)
-
-        if not user:
+    async def update_role(self, user_id: UserId, new_role: UserRole) -> None:
+        result = await self.collection.update_one(
+            {"_id": user_id}, {"$set": {"role": new_role.value}}
+        )
+        if result.matched_count == 0:
             raise ValueError(f"User with id {user_id} not found")
 
-        user.change_role(new_role)
-
-        await self.replace(user)
-
     async def create(self, user: User) -> None:
-        doc = UserMapper.to_document(user).model_dump()
+        doc = UserMapper.to_document(user).model_dump(by_alias=True)
+        try:
+            await self.collection.insert_one(doc)
 
-        await self.collection.insert_one(doc)
+        except DuplicateKeyError:
+            raise ValueError(f"User with id {user.id_} already exists") from None
 
     async def ban(self, user_id: UserId) -> None:
         await self.update_role(user_id=user_id, new_role=UserRole.BANNED)

@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +15,7 @@ class Settings(BaseSettings):
     MINIO_ROOT_PASSWORD: str
     MINIO_HOST: str
     MINIO_PORT: int
+    MINIO_BUCKET: str
 
     REDIS_HOST: str
     REDIS_PORT: int
@@ -38,14 +41,14 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )
 
-    @property
+    @cached_property
     def minio_endpoint(self) -> str:
         return f"{self.MINIO_HOST}:{self.MINIO_PORT}"
 
-    @property
+    @cached_property
     def redis_url(self) -> str:
         return f"redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
-    @property
+    @cached_property
     def mongo_url(self) -> str:
         return f"mongodb://{self.MONGO_ROOT_USER}:{self.MONGO_ROOT_PASSWORD}@{self.MONGO_HOST}:{self.MONGO_PORT}/?authSource=admin"
