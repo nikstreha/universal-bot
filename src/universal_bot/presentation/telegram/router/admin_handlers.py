@@ -2,7 +2,7 @@ from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardRemove
 
-# from src.api.managers.admin_manager import get_admins
+# from api.managers.admin_manager import get_admins
 from universal_bot.presentation.telegram.keyboards.admin_keyboard import (
     AdminButgtons,
     get_admin_keyboard,

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.universal_bot.application.dto.cache.cache_data import CacheDataDTO
+from universal_bot.application.dto.cache.cache_data import CacheDataDTO
 
 
 class ICacheProvider(ABC):

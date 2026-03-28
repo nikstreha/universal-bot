@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from universal_bot.infrastructure.mongodb.documents.user import UserDocument
+from universal_bot.application.dto.user.user import UserDocumentDTO
 
 
 class IUserReader(ABC):
     @abstractmethod
-    async def get_by_id(self, user_id: int) -> UserDocument | None: ...
+    async def get_by_id(self, user_id: int) -> UserDocumentDTO | None: ...
 
     @abstractmethod
     async def is_user_permitted(self, user_id: int) -> bool: ...

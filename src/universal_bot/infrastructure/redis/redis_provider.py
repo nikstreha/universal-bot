@@ -3,8 +3,8 @@ from types import TracebackType
 
 from redis.asyncio import Redis
 
-from src.universal_bot.application.dto.cache.cache_data import CacheDataDTO
-from src.universal_bot.application.port.cache.cache_provider import ICacheProvider
+from universal_bot.application.dto.cache.cache_data import CacheDataDTO
+from universal_bot.application.port.cache.cache_provider import ICacheProvider
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 from universal_bot.domain.enum.user.role import UserRole
 
@@ -21,3 +23,10 @@ class CacheUserDTO(BaseModel):
     role: UserRole
     user_name: str | None
     expire: int
+
+
+class UserDocumentDTO(BaseModel):
+    id_: int = Field(alias="_id")
+    role: UserRole
+    touched_at: datetime
+    user_name: str | None = None
