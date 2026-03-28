@@ -16,9 +16,9 @@ class RedisProvider(ICacheProvider):
 
     @property
     def redis(self) -> Redis:
-        if self.redis is None:
+        if self._redis is None:
             raise RuntimeError("RedisProvider is not connected. Call up() first.")
-        return self.redis
+        return self._redis
 
     async def up(self) -> None:
         self._redis = Redis.from_url(

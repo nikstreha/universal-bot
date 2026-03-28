@@ -27,7 +27,7 @@ class MyChatWriter(IMyChatWriter):
         user_id: UserId,
         message: Message,
     ) -> None:
-        message_doc = MessageMapper.to_document(message).model_dump
+        message_doc = MessageMapper.to_document(message).model_dump()
 
         await self.collection.update_one(
             {"user_id": user_id.value},

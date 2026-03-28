@@ -11,7 +11,7 @@ class MyChatReader(IMyChatReader):
         self.collection = db[Collections.CHATS]
 
     async def get_by_user_id(self, user_id: str) -> ChatDocument | None:
-        doc = await self.collection.find_one({"user.user_id": user_id})
+        doc = await self.collection.find_one({"user_id": user_id})
 
         if not doc:
             return None
