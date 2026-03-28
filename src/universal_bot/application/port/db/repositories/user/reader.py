@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
-from universal_bot.application.dto.user.user import UserDocumentDTO
+from universal_bot.application.dto.user.user import (
+    GetUserListRequestDTO,
+    UserDocumentDTO,
+)
 
 
 class IUserReader(ABC):
@@ -12,3 +15,8 @@ class IUserReader(ABC):
 
     @abstractmethod
     async def is_user_admin(self, user_id: int) -> bool: ...
+
+    @abstractmethod
+    async def get_collection(
+        self, request: GetUserListRequestDTO
+    ) -> list[UserDocumentDTO]: ...
