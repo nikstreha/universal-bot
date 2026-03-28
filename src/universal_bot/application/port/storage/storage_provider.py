@@ -1,14 +1,14 @@
 import logging
 from abc import ABC, abstractmethod
 
-from src.universal_bot.application.dto.storage.delete_file import DeleteFileDTO
-from src.universal_bot.application.dto.storage.get_file import (
+from universal_bot.application.dto.storage.delete_file import DeleteFileDTO
+from universal_bot.application.dto.storage.get_file import (
     DownloadDTO,
     GetFilesFromDirectoryDTO,
     GetFilesFromDirectoryResponseDTO,
     GetPersignedUrlDTO,
 )
-from src.universal_bot.application.dto.storage.put_file import PutFileDTO
+from universal_bot.application.dto.storage.put_file import PutFileDTO
 
 logger = logging.getLogger(__name__)
 

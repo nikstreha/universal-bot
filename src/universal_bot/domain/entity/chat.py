@@ -21,7 +21,7 @@ class MyChat(Entity[ChatId]):
         self.created_at = created_at
         self.updated_at = updated_at
         self.user_id = user_id
-        self.messages = messages
+        self.messages = messages or []
 
     @classmethod
     def create(

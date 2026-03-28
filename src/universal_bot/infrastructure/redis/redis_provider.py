@@ -3,8 +3,8 @@ from types import TracebackType
 
 from redis.asyncio import Redis
 
-from src.universal_bot.application.dto.cache.cache_data import CacheDataDTO
-from src.universal_bot.application.port.cache.cache_provider import ICacheProvider
+from universal_bot.application.dto.cache.cache_data import CacheDataDTO
+from universal_bot.application.port.cache.cache_provider import ICacheProvider
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +16,9 @@ class RedisProvider(ICacheProvider):
 
     @property
     def redis(self) -> Redis:
-        if self.redis is None:
+        if self._redis is None:
             raise RuntimeError("RedisProvider is not connected. Call up() first.")
-        return self.redis
+        return self._redis
 
     async def up(self) -> None:
         self._redis = Redis.from_url(

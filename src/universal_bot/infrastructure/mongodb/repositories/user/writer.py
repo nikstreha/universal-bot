@@ -1,7 +1,7 @@
 from pymongo.asynchronous.database import AsyncDatabase
 from pymongo.errors import DuplicateKeyError
 
-from src.universal_bot.application.port.db.repositories.user.writer import (
+from universal_bot.application.port.db.repositories.user.writer import (
     IUserWriter,
 )
 from universal_bot.domain.entity.user import User
