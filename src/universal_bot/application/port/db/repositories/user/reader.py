@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 
-from universal_bot.application.dto.user.user import (
+from universal_bot.application.dto.user.user import UserDocumentDTO
+from universal_bot.application.dto.user.user_list import (
     GetUserListRequestDTO,
-    UserDocumentDTO,
+    GetUserListResponseDTO,
 )
 
 
@@ -19,4 +20,4 @@ class IUserReader(ABC):
     @abstractmethod
     async def get_collection(
         self, request: GetUserListRequestDTO
-    ) -> list[UserDocumentDTO]: ...
+    ) -> GetUserListResponseDTO: ...
