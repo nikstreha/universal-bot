@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from dishka import AsyncContainer, Provider, make_async_container
 from dishka.integrations.aiogram import AiogramProvider
 from dishka.integrations.aiogram import setup_dishka as setup_aiogram
 
 from universal_bot.composition.configuration.config import Settings
 from universal_bot.composition.ioc.provider_registry import get_provider
-from universal_bot.presentation.telegram.router.admin_handlers import bot_router
+from universal_bot.presentation.telegram.router.main_router import root_router
 
 
 def create_ioc_container(
@@ -29,9 +30,9 @@ class BotApplication:
 
     async def up(self) -> None:
         bot = Bot(token=self.bot_token)
-        dp = Dispatcher()
+        dp = Dispatcher(storage=MemoryStorage())
 
-        dp.include_router(bot_router)
+        dp.include_router(root_router)
 
         setup_aiogram(self.container, dp)
 
@@ -41,7 +42,4 @@ class BotApplication:
 async def build_app() -> BotApplication:
     configuration = Settings()  # type: ignore
     container = create_ioc_container(configuration)
-    bot_application = BotApplication(
-        container=container, bot_token=configuration.BOT_TOKEN
-    )
-    return bot_application
+    return BotApplication(container=container, bot_token=configuration.BOT_TOKEN)
