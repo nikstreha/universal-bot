@@ -57,3 +57,6 @@ class RedisProvider(ICacheProvider):
 
     async def delete(self, key: str) -> None:
         await self.redis.delete(key)
+
+    async def keys(self, pattern: str) -> list[str]:
+        return await self.redis.keys(pattern)  # type: ignore

@@ -1,7 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from dishka.integrations.aiogram import FromDishka
+from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.ban import BanUserInteractor
 from universal_bot.application.query.admin.get_user import GetUserInteractor
@@ -22,6 +22,7 @@ async def handle_ban_start(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(AdminStates.ban_enter_id)
+@inject
 async def handle_ban_enter_id(
     message: types.Message,
     state: FSMContext,
@@ -48,6 +49,7 @@ async def handle_ban_enter_id(
 
 
 @router.callback_query(F.data.startswith("admin:ban:"))
+@inject
 async def handle_ban_confirm(
     callback: types.CallbackQuery,
     ban_user: FromDishka[BanUserInteractor],

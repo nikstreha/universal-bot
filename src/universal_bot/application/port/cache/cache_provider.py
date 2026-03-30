@@ -12,3 +12,6 @@ class ICacheProvider(ABC):
 
     @abstractmethod
     async def delete(self, key: str) -> None: ...
+
+    @abstractmethod
+    async def keys(self, pattern: str) -> list[str]: ...

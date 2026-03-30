@@ -1,6 +1,6 @@
 from aiogram import F, Router, types
 from aiogram.types import Message
-from dishka.integrations.aiogram import FromDishka
+from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.dto.user.user_list import GetUserListRequestDTO
 from universal_bot.application.query.admin.user_list import GetUserListInteractor
@@ -23,6 +23,7 @@ def _build_user_list_text(users: list) -> str:
 
 
 @router.message(F.text == AdminButtons.USER_LIST)
+@inject
 async def handle_user_list(
     message: types.Message,
     get_user_list: FromDishka[GetUserListInteractor],
@@ -45,6 +46,7 @@ async def handle_user_list(
 
 
 @router.callback_query(F.data == "admin:user_list_next")
+@inject
 async def handle_user_list_next(
     callback: types.CallbackQuery,
     get_user_list: FromDishka[GetUserListInteractor],

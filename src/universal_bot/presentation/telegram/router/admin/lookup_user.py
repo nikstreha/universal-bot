@@ -1,7 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from dishka.integrations.aiogram import FromDishka
+from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.query.admin.get_user import GetUserInteractor
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
@@ -23,6 +23,7 @@ async def handle_lookup_start(message: types.Message, state: FSMContext) -> None
 
 
 @router.message(AdminStates.lookup_enter_id)
+@inject
 async def handle_lookup_enter_id(
     message: types.Message,
     state: FSMContext,

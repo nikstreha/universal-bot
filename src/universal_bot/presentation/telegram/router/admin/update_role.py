@@ -1,7 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from dishka.integrations.aiogram import FromDishka
+from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.update_role import UpdateRoleInteractor
 from universal_bot.application.dto.user.user import UpdateUserRoleDTO
@@ -24,6 +24,7 @@ async def handle_update_role_start(message: types.Message, state: FSMContext) ->
 
 
 @router.message(AdminStates.update_role_enter_id)
+@inject
 async def handle_update_role_enter_id(
     message: types.Message,
     state: FSMContext,
@@ -50,6 +51,7 @@ async def handle_update_role_enter_id(
 
 
 @router.callback_query(F.data.startswith("admin:set_role:"))
+@inject
 async def handle_set_role_confirm(
     callback: types.CallbackQuery,
     update_role: FromDishka[UpdateRoleInteractor],

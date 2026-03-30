@@ -8,6 +8,7 @@ from universal_bot.domain.entity.user import User
 from universal_bot.domain.enum.user.role import UserRole
 from universal_bot.domain.value_object.user.id import UserId
 from universal_bot.infrastructure.mongodb.collections import Collections
+from universal_bot.infrastructure.mongodb.documents.user import UserDocument
 from universal_bot.infrastructure.mongodb.mapper.user import UserMapper
 
 
@@ -16,12 +17,12 @@ class UserWriter(IUserWriter):
         self.collection = db[Collections.USER]
 
     async def get_by_id(self, user_id: UserId) -> User | None:
-        doc = await self.collection.find_one({"_id": user_id})
+        doc = await self.collection.find_one({"_id": user_id.value})
 
         if not doc:
             return None
 
-        return UserMapper.to_entity(doc)
+        return UserMapper.to_entity(UserDocument(**doc))
 
     async def replace(self, user: User) -> None:
         doc = UserMapper.to_document(user)
@@ -33,7 +34,7 @@ class UserWriter(IUserWriter):
 
     async def update_role(self, user_id: UserId, new_role: UserRole) -> None:
         result = await self.collection.update_one(
-            {"_id": user_id}, {"$set": {"role": new_role.value}}
+            {"_id": user_id.value}, {"$set": {"role": new_role}}
         )
         if result.matched_count == 0:
             raise ValueError(f"User with id {user_id} not found")

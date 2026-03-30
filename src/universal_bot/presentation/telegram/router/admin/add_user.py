@@ -1,7 +1,7 @@
 from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from dishka.integrations.aiogram import FromDishka
+from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.add_user import AddUserInteractor
 from universal_bot.application.dto.user.user import AddUserDTO
@@ -41,6 +41,7 @@ async def handle_add_user_enter_id(
 
 
 @router.callback_query(F.data.startswith("admin:add_role:"))
+@inject
 async def handle_add_role_confirm(
     callback: types.CallbackQuery,
     add_user: FromDishka[AddUserInteractor],
