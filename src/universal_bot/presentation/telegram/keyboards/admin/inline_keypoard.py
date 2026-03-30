@@ -4,6 +4,24 @@ from aiogram.types import (
 )
 
 from universal_bot.domain.enum.user.role import UserRole
+from universal_bot.presentation.telegram.keyboards.admin.buttons import (
+    ActionButtons,
+    AdminButtons,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.get_role import (
+    ChangeRoleCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.pagination import (
+    AdminMessagesCallback,
+    UserListCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
+    PrefixCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.user_action import (
+    BanUserCallback,
+    ChangeUserRoleCallback,
+)
 
 
 def get_ban_confirm_keyboard(user_id: int) -> InlineKeyboardMarkup:
@@ -11,9 +29,12 @@ def get_ban_confirm_keyboard(user_id: int) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="✓ Confirm ban", callback_data=f"admin:ban:{user_id}"
+                    text=f"{ActionButtons.CONFIRM} ban",
+                    callback_data=BanUserCallback(user_id=user_id).pack(),
                 ),
-                InlineKeyboardButton(text="✗ Cancel", callback_data="admin:cancel"),
+                InlineKeyboardButton(
+                    text=ActionButtons.CANCEL, callback_data=PrefixCallback.CANCEL
+                ),
             ]
         ]
     )
@@ -29,8 +50,13 @@ def get_role_keyboard(user_id: int, prefix: str) -> InlineKeyboardMarkup:
         row.append(
             InlineKeyboardButton(
                 text=role,
-                callback_data=f"admin:{prefix}:{user_id}:{role.value}",
-            )
+                callback_data=ChangeRoleCallback(
+                    action=prefix,
+                    prefix=prefix,
+                    user_id=user_id,
+                    role=role,
+                ).pack(),
+            ),
         )
         if len(row) == 3:
             rows.append(row)
@@ -38,33 +64,58 @@ def get_role_keyboard(user_id: int, prefix: str) -> InlineKeyboardMarkup:
     if row:
         rows.append(row)
 
-    rows.append([InlineKeyboardButton(text="✗ Cancel", callback_data="admin:cancel")])
+    rows.append(
+        [
+            InlineKeyboardButton(
+                text=ActionButtons.CANCEL, callback_data=PrefixCallback.CANCEL
+            )
+        ]
+    )
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def get_user_actions_keyboard(user_id: int) -> InlineKeyboardMarkup:
-    """Inline keyboard shown under a looked-up user's info card."""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Ban", callback_data=f"admin:ban_prompt:{user_id}"
+                    text=AdminButtons.BAN_USER,
+                    callback_data=BanUserCallback(user_id=user_id).pack(),
                 ),
                 InlineKeyboardButton(
-                    text="Change role", callback_data=f"admin:role_prompt:{user_id}"
+                    text=AdminButtons.CHANGE_ROLE,
+                    callback_data=ChangeUserRoleCallback(user_id=user_id).pack(),
                 ),
             ],
-            [InlineKeyboardButton(text="✗ Cancel", callback_data="admin:cancel")],
+            [
+                InlineKeyboardButton(
+                    text=ActionButtons.CANCEL, callback_data=PrefixCallback.CANCEL
+                )
+            ],
         ]
     )
 
 
-def get_user_list_next_keyboard() -> InlineKeyboardMarkup:
+def get_user_list_next_keyboard(cursor: int = 0) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Next page →", callback_data="admin:user_list_next"
+                    text=ActionButtons.NEXT,
+                    callback_data=UserListCallback(cursor=cursor).pack(),
+                )
+            ]
+        ]
+    )
+
+
+def get_admin_messages_next_keyboard(cursor: int = 0) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=ActionButtons.NEXT,
+                    callback_data=AdminMessagesCallback(cursor=cursor).pack(),
                 )
             ]
         ]

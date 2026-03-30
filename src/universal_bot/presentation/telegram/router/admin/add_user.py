@@ -5,10 +5,15 @@ from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.add_user import AddUserInteractor
 from universal_bot.application.dto.user.user import AddUserDTO
-from universal_bot.domain.enum.user.role import UserRole
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
 from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
     get_role_keyboard,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.get_role import (
+    ChangeRoleCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
+    PrefixCallback,
 )
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
@@ -36,27 +41,29 @@ async def handle_add_user_enter_id(
     await message.answer(
         f"Adding user <code>{user_id}</code>. Select role:",
         parse_mode="HTML",
-        reply_markup=get_role_keyboard(user_id, "add_role"),
+        reply_markup=get_role_keyboard(user_id, PrefixCallback.ADD_ROLE),
     )
 
 
-@router.callback_query(F.data.startswith("admin:add_role:"))
+@router.callback_query(ChangeRoleCallback.filter(F.action == PrefixCallback.ADD_ROLE))
 @inject
 async def handle_add_role_confirm(
     callback: types.CallbackQuery,
-    add_user: FromDishka[AddUserInteractor],
+    callback_data: ChangeRoleCallback,
+    interactor: FromDishka[AddUserInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    parts = callback.data.split(":")  # type: ignore[union-attr]
-    user_id = int(parts[2])
-    role = UserRole(parts[3])
     try:
-        await add_user(AddUserDTO(user_id=user_id, role=role, user_name=None))
+        await interactor(
+            AddUserDTO(
+                user_id=callback_data.user_id, role=callback_data.role, user_name=None
+            )
+        )
         await callback.message.edit_text(
-            f"User <code>{user_id}</code> added with role <b>{role}</b>.",
+            f"User <code>{callback_data.user_id}</code> added with role <b>{callback_data.role}</b>.",
             parse_mode="HTML",
         )
     except Exception as e:

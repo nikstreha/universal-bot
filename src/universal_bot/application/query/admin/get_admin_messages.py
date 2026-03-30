@@ -21,9 +21,17 @@ class GetAdminMessagesInteractor:
         iso_part = key.removeprefix(f"{CacheKey.MESSAGES_FOR_ADMIN}:")
         return datetime.fromisoformat(iso_part)
 
-    async def __call__(self, query: GetAdminMessagesDTO) -> SuperAdminMessageList:
+    async def __call__(
+        self, query: GetAdminMessagesDTO
+    ) -> SuperAdminMessageList | None:
         pattern = f"{CacheKey.MESSAGES_FOR_ADMIN}:*"
         keys = await self._cache_provider.keys(pattern)
+
+        a = await self._cache_provider.keys("*")
+        print(a)
+
+        if not keys:
+            return None
 
         keys.sort()
 

@@ -9,6 +9,9 @@ from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminBut
 from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
     get_ban_confirm_keyboard,
 )
+from universal_bot.presentation.telegram.keyboards.callback_data.user_action import (
+    BanUserCallback,
+)
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
@@ -26,7 +29,7 @@ async def handle_ban_start(message: types.Message, state: FSMContext) -> None:
 async def handle_ban_enter_id(
     message: types.Message,
     state: FSMContext,
-    get_user: FromDishka[GetUserInteractor],
+    interactor: FromDishka[GetUserInteractor],
 ) -> None:
     text = (message.text or "").strip()
     if not text.lstrip("-").isdigit():
@@ -34,7 +37,7 @@ async def handle_ban_enter_id(
         return
 
     user_id = int(text)
-    user = await get_user(user_id)
+    user = await interactor(user_id)
 
     if not user:
         await message.answer("User not found. Enter another ID or /cancel:")
@@ -48,21 +51,22 @@ async def handle_ban_enter_id(
     )
 
 
-@router.callback_query(F.data.startswith("admin:ban:"))
+@router.callback_query(BanUserCallback.filter(F.action == AdminButtons.BAN_USER))
 @inject
 async def handle_ban_confirm(
     callback: types.CallbackQuery,
-    ban_user: FromDishka[BanUserInteractor],
+    callback_data: BanUserCallback,
+    interactor: FromDishka[BanUserInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    user_id = int(callback.data.split(":")[2])  # type: ignore[union-attr]
     try:
-        await ban_user(user_id)
+        await interactor(callback_data.user_id)
         await callback.message.edit_text(
-            f"User <code>{user_id}</code> has been banned.", parse_mode="HTML"
+            f"User <code>{callback_data.user_id}</code> has been banned.",
+            parse_mode="HTML",
         )
 
     except ValueError as e:

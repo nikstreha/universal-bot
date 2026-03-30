@@ -1,24 +1,10 @@
-from aiogram.types import (
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-)
+from aiogram.types import ReplyKeyboardMarkup
 
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
+from universal_bot.presentation.telegram.keyboards.reply_keyboard_factory import (
+    ReplyKeyboardFactory,
+)
 
 
 def get_admin_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(text=AdminButtons.BAN_USER),
-                KeyboardButton(text=AdminButtons.CHANGE_ROLE),
-            ],
-            [
-                KeyboardButton(text=AdminButtons.ADD_USER),
-                KeyboardButton(text=AdminButtons.USER_LIST),
-            ],
-            [KeyboardButton(text=AdminButtons.LOOKUP_USER)],
-            [KeyboardButton(text=AdminButtons.EXIT)],
-        ],
-        resize_keyboard=True,
-    )
+    return ReplyKeyboardFactory.build(AdminButtons, buttons_per_row=2)

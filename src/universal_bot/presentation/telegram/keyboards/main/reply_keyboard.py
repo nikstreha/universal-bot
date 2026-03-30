@@ -1,15 +1,10 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup
 
 from universal_bot.presentation.telegram.keyboards.main.buttons import MainButtons
+from universal_bot.presentation.telegram.keyboards.reply_keyboard_factory import (
+    ReplyKeyboardFactory,
+)
 
 
 def get_main_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [
-                KeyboardButton(text=MainButtons.ADMIN),
-                KeyboardButton(text=MainButtons.STUB),
-            ],
-        ],
-        resize_keyboard=True,
-    )
+    return ReplyKeyboardFactory.build(MainButtons)

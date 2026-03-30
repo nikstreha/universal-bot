@@ -6,10 +6,15 @@ from dishka.integrations.aiogram import FromDishka, inject
 from universal_bot.application.command.admin.update_role import UpdateRoleInteractor
 from universal_bot.application.dto.user.user import UpdateUserRoleDTO
 from universal_bot.application.query.admin.get_user import GetUserInteractor
-from universal_bot.domain.enum.user.role import UserRole
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
 from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
     get_role_keyboard,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.get_role import (
+    ChangeRoleCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
+    PrefixCallback,
 )
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
@@ -28,7 +33,7 @@ async def handle_update_role_start(message: types.Message, state: FSMContext) ->
 async def handle_update_role_enter_id(
     message: types.Message,
     state: FSMContext,
-    get_user: FromDishka[GetUserInteractor],
+    interactor: FromDishka[GetUserInteractor],
 ) -> None:
     text = (message.text or "").strip()
     if not text.lstrip("-").isdigit():
@@ -36,7 +41,7 @@ async def handle_update_role_enter_id(
         return
 
     user_id = int(text)
-    user = await get_user(user_id)
+    user = await interactor(user_id)
 
     if not user:
         await message.answer("User not found. Enter another ID or /cancel:")
@@ -46,25 +51,25 @@ async def handle_update_role_enter_id(
     await message.answer(
         f"User found:\n\n{format_user(user)}\n\nSelect new role:",
         parse_mode="HTML",
-        reply_markup=get_role_keyboard(user_id, "set_role"),
+        reply_markup=get_role_keyboard(user_id, PrefixCallback.SET_ROLE),
     )
 
 
-@router.callback_query(F.data.startswith("admin:set_role:"))
+@router.callback_query(ChangeRoleCallback.filter(F.action == PrefixCallback.SET_ROLE))
 @inject
-async def handle_set_role_confirm(
+async def handle_change_role_confirm(
     callback: types.CallbackQuery,
-    update_role: FromDishka[UpdateRoleInteractor],
+    callback_data: ChangeRoleCallback,
+    interactor: FromDishka[UpdateRoleInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    parts = callback.data.split(":")  # type: ignore[union-attr]
-    user_id = int(parts[2])
-    role = UserRole(parts[3])
+    user_id = callback_data.user_id
+    role = callback_data.role
     try:
-        await update_role(UpdateUserRoleDTO(user_id=user_id, role=role))
+        await interactor(UpdateUserRoleDTO(user_id=user_id, role=role))
         await callback.message.edit_text(
             f"Role of user <code>{user_id}</code> changed to <b>{role}</b>.",
             parse_mode="HTML",

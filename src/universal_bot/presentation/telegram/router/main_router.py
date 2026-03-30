@@ -7,5 +7,5 @@ from universal_bot.presentation.telegram.router.system.system_handler import (
 
 root_router = Router()
 
-root_router.include_router(system_router)
 root_router.include_router(admin_router)
+root_router.include_router(system_router)

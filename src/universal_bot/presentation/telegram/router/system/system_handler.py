@@ -1,7 +1,12 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
+from dishka.integrations.aiogram import FromDishka, inject
 
+from universal_bot.application.command.common.unknown_user_message import (
+    UnknownUserMessageInteractor,
+)
+from universal_bot.application.dto.messages.unknown import UnknownMessageDTO
 from universal_bot.presentation.telegram.keyboards.admin.reply_keyboard import (
     get_admin_keyboard,
 )
@@ -34,3 +39,17 @@ async def handle_stub(message: types.Message) -> None:
 async def handle_enter_admin(message: types.Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer("Admin panel", reply_markup=get_admin_keyboard())
+
+
+@router.message()
+@inject
+async def final(
+    message: types.Message, interactor: FromDishka[UnknownUserMessageInteractor]
+) -> None:
+    await interactor(
+        UnknownMessageDTO(
+            user_id=message.from_user.id,
+            message=message.text,
+        )
+    )
+    await message.answer(message.text)

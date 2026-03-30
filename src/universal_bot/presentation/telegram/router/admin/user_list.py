@@ -4,9 +4,15 @@ from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.dto.user.user_list import GetUserListRequestDTO
 from universal_bot.application.query.admin.user_list import GetUserListInteractor
-from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
+from universal_bot.presentation.telegram.keyboards.admin.buttons import (
+    ActionButtons,
+    AdminButtons,
+)
 from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
     get_user_list_next_keyboard,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.pagination import (
+    UserListCallback,
 )
 
 router = Router()
@@ -26,46 +32,63 @@ def _build_user_list_text(users: list) -> str:
 @inject
 async def handle_user_list(
     message: types.Message,
-    get_user_list: FromDishka[GetUserListInteractor],
+    interactor: FromDishka[GetUserListInteractor],
 ) -> None:
     if not message.from_user:
         return
 
-    users = await get_user_list(
+    response = await interactor(
         GetUserListRequestDTO(user_id=message.from_user.id, limit=_PAGE_SIZE)
     )
 
-    if not users:
+    if not response.user_list:
         await message.answer("No users found.")
         return
 
-    keyboard = get_user_list_next_keyboard() if len(users) == _PAGE_SIZE else None
+    keyboard = (
+        get_user_list_next_keyboard(response.cursor if response.cursor else 0)
+        if len(response.user_list) == _PAGE_SIZE
+        else None
+    )
     await message.answer(
-        _build_user_list_text(users), parse_mode="HTML", reply_markup=keyboard
+        _build_user_list_text(response.user_list),
+        parse_mode="HTML",
+        reply_markup=keyboard,
     )
 
 
-@router.callback_query(F.data == "admin:user_list_next")
+@router.callback_query(UserListCallback.filter(F.action == ActionButtons.NEXT))
 @inject
 async def handle_user_list_next(
     callback: types.CallbackQuery,
-    get_user_list: FromDishka[GetUserListInteractor],
+    callback_data: UserListCallback,
+    interactor: FromDishka[GetUserListInteractor],
 ) -> None:
+    cursor = callback_data.cursor
+
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    users = await get_user_list(
-        GetUserListRequestDTO(user_id=callback.from_user.id, limit=_PAGE_SIZE)
+    response = await interactor(
+        GetUserListRequestDTO(
+            user_id=callback.from_user.id, limit=_PAGE_SIZE, after_id=cursor
+        )
     )
 
-    if not users:
+    if not response.user_list:
         await callback.message.edit_text("No more users.")
         await callback.answer()
         return
 
-    keyboard = get_user_list_next_keyboard() if len(users) == _PAGE_SIZE else None
+    keyboard = (
+        get_user_list_next_keyboard(response.cursor if response.cursor else 0)
+        if len(response.user_list) == _PAGE_SIZE
+        else None
+    )
     await callback.message.edit_text(
-        _build_user_list_text(users), parse_mode="HTML", reply_markup=keyboard
+        _build_user_list_text(response.user_list),
+        parse_mode="HTML",
+        reply_markup=keyboard,
     )
     await callback.answer()

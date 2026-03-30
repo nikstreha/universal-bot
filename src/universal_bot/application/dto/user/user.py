@@ -30,3 +30,8 @@ class UserDocumentDTO(BaseModel):
     role: UserRole
     touched_at: datetime
     user_name: str | None = None
+
+
+class UserCollectionResponseDTO(BaseModel):
+    cursor: int | None = None
+    user_list: list[UserDocumentDTO]

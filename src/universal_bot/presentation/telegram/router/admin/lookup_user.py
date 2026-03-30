@@ -10,6 +10,13 @@ from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import 
     get_role_keyboard,
     get_user_actions_keyboard,
 )
+from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
+    PrefixCallback,
+)
+from universal_bot.presentation.telegram.keyboards.callback_data.user_action import (
+    BanUserCallback,
+    ChangeUserRoleCallback,
+)
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
@@ -27,7 +34,7 @@ async def handle_lookup_start(message: types.Message, state: FSMContext) -> None
 async def handle_lookup_enter_id(
     message: types.Message,
     state: FSMContext,
-    get_user: FromDishka[GetUserInteractor],
+    interactor: FromDishka[GetUserInteractor],
 ) -> None:
     text = (message.text or "").strip()
     if not text.lstrip("-").isdigit():
@@ -35,7 +42,7 @@ async def handle_lookup_enter_id(
         return
 
     user_id = int(text)
-    user = await get_user(user_id)
+    user = await interactor(user_id)
 
     if not user:
         await message.answer("User not found. Enter another ID or /cancel:")
@@ -49,27 +56,31 @@ async def handle_lookup_enter_id(
     )
 
 
-@router.callback_query(F.data.startswith("admin:ban_prompt:"))
-async def handle_ban_prompt(callback: types.CallbackQuery) -> None:
+@router.callback_query(BanUserCallback.filter(F.action == AdminButtons.BAN_USER))
+async def handle_ban_prompt(
+    callback: types.CallbackQuery, callback_data: BanUserCallback
+) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    user_id = int(callback.data.split(":")[2])  # type: ignore[union-attr]
     await callback.message.edit_reply_markup(
-        reply_markup=get_ban_confirm_keyboard(user_id)
+        reply_markup=get_ban_confirm_keyboard(callback_data.user_id)
     )
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("admin:role_prompt:"))
-async def handle_role_prompt(callback: types.CallbackQuery) -> None:
+@router.callback_query(
+    ChangeUserRoleCallback.filter(F.action == AdminButtons.CHANGE_ROLE)
+)
+async def handle_role_prompt(
+    callback: types.CallbackQuery, callback_data: ChangeUserRoleCallback
+) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
 
-    user_id = int(callback.data.split(":")[2])  # type: ignore[union-attr]
     await callback.message.edit_reply_markup(
-        reply_markup=get_role_keyboard(user_id, "set_role")
+        reply_markup=get_role_keyboard(callback_data.user_id, PrefixCallback.SET_ROLE)
     )
     await callback.answer()
