@@ -8,4 +8,5 @@ class UserId(ValueObject):
     value: int
 
     def __post_init__(self):
-        assert self.value > 0, ValueError("User ID must be greater than 0")
+        if self.value <= 0:
+            raise ValueError("User ID must be greater than 0")

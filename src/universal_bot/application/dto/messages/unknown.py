@@ -16,7 +16,9 @@ class CacheMessage(BaseModel):
     message: str | None = None
 
 
-class UnknownMessageDTO(CacheMessage):
+class UnknownMessageDTO(BaseModel):
+    user_id: int
+    message: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @property

@@ -18,10 +18,10 @@ class SaveFileInteractor:
         self._storage_provider = storage_provider
         self._configuration = configuration
 
-    async def __call__(self, file_collention: list[FileDTO]) -> SaveFilesResponseDTO:
+    async def __call__(self, file_collection: list[FileDTO]) -> SaveFilesResponseDTO:
         errors = []
 
-        for file in file_collention:
+        for file in file_collection:
             res = await self._storage_provider.upload_file(
                 PutFileDTO(
                     bucket_name=self._configuration.MINIO_BUCKET,
@@ -36,7 +36,7 @@ class SaveFileInteractor:
 
         if not errors:
             return SaveFilesResponseDTO(status=Status.SUCCESS)
-        elif len(errors) == len(file_collention):
+        elif len(errors) == len(file_collection):
             return SaveFilesResponseDTO(status=Status.FAIL, errors=errors)
         else:
             return SaveFilesResponseDTO(status=Status.PARTIAL_SUCCESS, errors=errors)

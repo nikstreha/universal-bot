@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     MESSAGE_FOR_ADMIN_PAGE_SIZE: int = 20
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="allow"
+        env_file=".env", env_file_encoding="utf-8", extra="forbid"
     )
 
     @cached_property

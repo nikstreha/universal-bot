@@ -2,6 +2,7 @@ import logging
 from types import TracebackType
 
 import aiohttp
+from attr import has
 from miniopy_async.api import Minio
 from miniopy_async.error import S3Error
 
@@ -11,7 +12,7 @@ from universal_bot.application.dto.storage.get_file import (
     FolderDTO,
     GetFilesFromDirectoryDTO,
     GetFilesFromDirectoryResponseDTO,
-    GetPersignedUrlDTO,
+    GetPresignedUrlDTO,
     ItemDTO,
 )
 from universal_bot.application.dto.storage.put_file import PutFileDTO
@@ -105,7 +106,7 @@ class MinioProvider(IStorageProvider):
             "File %s deleted from bucket %s", file.object_name, file.bucket_name
         )
 
-    async def get_presigned_url(self, presigned_url: GetPersignedUrlDTO) -> str:
+    async def get_presigned_url(self, presigned_url: GetPresignedUrlDTO) -> str:
         return await self.client.presigned_get_object(
             bucket_name=presigned_url.bucket_name,
             object_name=presigned_url.object_name,
@@ -128,8 +129,12 @@ class MinioProvider(IStorageProvider):
         count = 0
         last_processed_key = None
 
+        has_more = False
+
         for obj in objects_iter:
             if count >= files_request.limit:
+                if any(ob for ob in objects_iter[files_request.limit:]):
+                    has_more = True
                 break
 
             last_processed_key = obj.object_name
@@ -154,12 +159,12 @@ class MinioProvider(IStorageProvider):
                         )
                     )
 
-            count += 1
+                count += 1
 
         return GetFilesFromDirectoryResponseDTO(
             folders=folders,
             items=items,
-            has_more=count >= files_request.limit,
+            has_more=has_more,
             last_processed_key=last_processed_key,
         )
 

@@ -9,7 +9,7 @@ class DownloadDTO:
 
 
 @dataclass(frozen=True)
-class GetPersignedUrlDTO:
+class GetPresignedUrlDTO:
     bucket_name: str
     object_name: str
     expires: timedelta = timedelta(hours=12)

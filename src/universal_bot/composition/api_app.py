@@ -36,7 +36,10 @@ class BotApplication:
 
         setup_aiogram(self.container, dp)
 
-        await dp.start_polling(bot)
+        try:
+            await dp.start_polling(bot)
+        finally:
+            await self.container.close()
 
 
 async def build_app() -> BotApplication:
