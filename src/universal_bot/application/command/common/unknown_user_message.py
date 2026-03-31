@@ -20,7 +20,7 @@ class UnknownUserMessageInteractor:
         )
         await self._cache_provider.set(
             CacheDataDTO(
-                key=f"{CacheKey.MESSAGES_FOR_ADMIN}:{unknown_msg.created_at}",
+                key=unknown_msg.cache_key,
                 value=json.dumps(cache_msg.model_dump()),
                 expire=60 * 60 * 24 * 7,
             ),

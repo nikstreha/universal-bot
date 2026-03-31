@@ -31,7 +31,7 @@ def get_ban_confirm_keyboard(user_id: int) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     text=f"{ActionButtons.CONFIRM} ban",
                     callback_data=BanUserCallback(
-                        action=AdminActions.BAN_USER,
+                        action=AdminActions.CONFIRM_BAN,
                         user_id=user_id,
                     ).pack(),
                 ),

@@ -9,12 +9,12 @@ class Status(StrEnum):
 
 
 @dataclass(frozen=True)
-class SaveFileErrorResponceDTO:
+class SaveFileErrorResponseDTO:
     file_name: str
     message: str = "Can't upload file"
 
 
 @dataclass(frozen=True)
-class SaveFilesResponceDTO:
+class SaveFilesResponseDTO:
     status: Status
-    errors: list[SaveFileErrorResponceDTO] | None = None
+    errors: list[SaveFileErrorResponseDTO] | None = None

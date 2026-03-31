@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, UTC
 
 from pydantic import BaseModel, Field
 
@@ -17,9 +17,10 @@ class CacheMessage(BaseModel):
 
 
 class UnknownMessageDTO(CacheMessage):
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def build_cache_key(self) -> str:
+    @property
+    def cache_key(self) -> str:
         return f"{CacheKey.MESSAGES_FOR_ADMIN}:{self.created_at.isoformat()}"
 
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import BinaryIO
 
-from universal_bot.application.dto.ai_chat.content_types import ContentTypes
+from universal_bot.application.dto.common.content_types import ContentTypes
 
 
 @dataclass(frozen=True)

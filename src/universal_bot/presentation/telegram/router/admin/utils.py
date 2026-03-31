@@ -10,3 +10,14 @@ def format_user(user: UserDocumentDTO) -> str:
         f"Role: <b>{user.role}</b>\n"
         f"Last seen: {user.touched_at.strftime('%Y-%m-%d %H:%M UTC')}"
     )
+
+
+def extract_id(text: str) -> int:
+    if not text.lstrip("-").isdigit():
+        raise ValueError("Invalid ID. Please enter a numeric ID.")
+
+    id_ = int(text)
+    if id_ <= 0:
+        raise ValueError("ID must be greater than 0.")
+
+    return id_

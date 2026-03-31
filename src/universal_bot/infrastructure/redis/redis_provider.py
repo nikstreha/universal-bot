@@ -30,6 +30,7 @@ class RedisProvider(ICacheProvider):
             await self.redis.ping()  # type: ignore
             logger.info("Redis connection established")
         except Exception:
+            self._redis = None
             logger.exception("Redis connection error")
 
     async def down(self) -> None:
@@ -60,5 +61,4 @@ class RedisProvider(ICacheProvider):
 
     async def keys(self, pattern: str) -> list[str] | None:
         key_collection = await self.redis.keys(pattern)
-        a = await self.redis.keys()
         return list(key_collection) if key_collection else None

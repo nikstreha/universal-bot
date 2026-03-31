@@ -9,13 +9,13 @@ class AddUserDTO(BaseModel):
     user_id: int
     role: UserRole
     user_name: str | None
-    expire: int | None = None
+    expire: int | None = Field(default=None, gt=0)
 
 
 class UpdateUserRoleDTO(BaseModel):
     user_id: int
     role: UserRole
-    expire: int | None = None
+    expire: int | None = Field(default=None, gt=0)
 
 
 class CacheUserDTO(BaseModel):

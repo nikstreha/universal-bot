@@ -1,4 +1,5 @@
 from aiogram import F, Router, types
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -16,6 +17,7 @@ from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminBut
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_role_keyboard,
 )
+from universal_bot.presentation.telegram.router.admin.utils import extract_id
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
 router = Router()
@@ -27,17 +29,14 @@ async def handle_add_user_start(message: types.Message, state: FSMContext) -> No
     await message.answer("Enter user ID to add (or /cancel to abort):")
 
 
-@router.message(AdminStates.add_user_enter_id)
+@router.message(AdminStates.add_user_enter_id, ~Command("cancel"))
 async def handle_add_user_enter_id(
     message: types.Message,
     state: FSMContext,
 ) -> None:
     text = (message.text or "").strip()
-    if not text.lstrip("-").isdigit():
-        await message.answer("Invalid ID. Please enter a numeric user ID:")
-        return
+    user_id = extract_id(text)
 
-    user_id = int(text)
     await state.clear()
     await message.answer(
         f"Adding user <code>{user_id}</code>. Select role:",

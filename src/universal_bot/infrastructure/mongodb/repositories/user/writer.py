@@ -29,7 +29,7 @@ class UserWriter(IUserWriter):
 
         await self.collection.replace_one(
             {"_id": doc.id_},
-            doc.model_dump(),
+            doc.model_dump(by_alias=True),
         )
 
     async def update_role(self, user_id: UserId, new_role: UserRole) -> None:

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, model_validator, Field
 
 from universal_bot.application.dto.user.user import UserDocumentDTO
 from universal_bot.domain.enum.user.role import UserRole
@@ -6,7 +6,7 @@ from universal_bot.domain.enum.user.role import UserRole
 
 class GetUserListRequestDTO(BaseModel):
     user_id: int
-    limit: int = 20
+    limit: int = Field(default=20, ge=1, le=100)
     after_id: int | None = None
     role: UserRole | None = None
     gt: bool = False

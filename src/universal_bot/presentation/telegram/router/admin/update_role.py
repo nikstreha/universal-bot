@@ -1,4 +1,5 @@
 from aiogram import F, Router, types
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -14,7 +15,7 @@ from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminBut
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_role_keyboard,
 )
-from universal_bot.presentation.telegram.router.admin.utils import format_user
+from universal_bot.presentation.telegram.router.admin.utils import extract_id, format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
 router = Router()
@@ -26,7 +27,7 @@ async def handle_update_role_start(message: types.Message, state: FSMContext) ->
     await message.answer("Enter user ID to change role (or /cancel to abort):")
 
 
-@router.message(AdminStates.update_role_enter_id)
+@router.message(AdminStates.update_role_enter_id, ~Command("cancel"))
 @inject
 async def handle_update_role_enter_id(
     message: types.Message,
@@ -34,11 +35,8 @@ async def handle_update_role_enter_id(
     interactor: FromDishka[GetUserInteractor],
 ) -> None:
     text = (message.text or "").strip()
-    if not text.lstrip("-").isdigit():
-        await message.answer("Invalid ID. Please enter a numeric user ID:")
-        return
+    user_id = extract_id(text)
 
-    user_id = int(text)
     user = await interactor(user_id)
 
     if not user:

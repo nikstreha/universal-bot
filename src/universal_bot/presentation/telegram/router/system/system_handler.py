@@ -26,7 +26,7 @@ async def handle_start(message: types.Message) -> None:
 
 
 @router.message(Command("help"))
-async def hendle_help(message: types.Message) -> None:
+async def handle_help(message: types.Message) -> None:
     await message.answer(text="I'm a helper")
 
 

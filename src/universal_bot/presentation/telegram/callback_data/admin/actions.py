@@ -9,6 +9,7 @@ class AdminActions(StrEnum):
     PREV_USER_LIST = "prev_usr_lst"
 
     BAN_USER = "ban_usr"
+    CONFIRM_BAN = "confirm_ban"
 
     ADD_ROLE = "add_r"
     SET_ROLE = "set_r"

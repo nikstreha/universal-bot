@@ -70,9 +70,9 @@ class UserReader(IUserReader):
         else:
             after_id = None
 
-        responce = GetUserListResponseDTO(
+        response = GetUserListResponseDTO(
             user_list=[UserDocumentDTO.model_validate(doc) for doc in docs],
             after_id=after_id,
         )
 
-        return responce
+        return response

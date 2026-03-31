@@ -58,7 +58,7 @@ class QueryProvider(Provider):
 
     @provide
     def get_user_list_query(
-        self, user_reader: IUserReader, cache_provider: ICacheProvider
+        self, user_reader: IUserReader
     ) -> GetUserListInteractor:
         return GetUserListInteractor(user_reader=user_reader)
 

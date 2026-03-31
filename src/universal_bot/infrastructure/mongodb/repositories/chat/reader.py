@@ -12,7 +12,7 @@ class MyChatReader(IMyChatReader):
     def __init__(self, db: AsyncDatabase) -> None:
         self.collection = db[Collections.CHATS]
 
-    async def get_by_user_id(self, user_id: str) -> ChatDocumentDTO | None:
+    async def get_by_user_id(self, user_id: int) -> ChatDocumentDTO | None:
         doc = await self.collection.find_one({"user_id": user_id})
 
         if not doc:
@@ -21,7 +21,7 @@ class MyChatReader(IMyChatReader):
         return ChatDocumentDTO.model_validate(doc)
 
     async def get_messages(
-        self, user_id: str, limit: int = 20
+        self, user_id: int, limit: int = 20
     ) -> list[MessageDocumentDTO]:
         doc = await self.collection.find_one(
             {"user_id": user_id},

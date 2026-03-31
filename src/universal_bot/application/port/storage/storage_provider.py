@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 
 from universal_bot.application.dto.storage.delete_file import DeleteFileDTO
@@ -9,8 +8,6 @@ from universal_bot.application.dto.storage.get_file import (
     GetPersignedUrlDTO,
 )
 from universal_bot.application.dto.storage.put_file import PutFileDTO
-
-logger = logging.getLogger(__name__)
 
 
 class IStorageProvider(ABC):

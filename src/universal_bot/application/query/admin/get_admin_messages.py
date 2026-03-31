@@ -27,9 +27,6 @@ class GetAdminMessagesInteractor:
         pattern = f"{CacheKey.MESSAGES_FOR_ADMIN}:*"
         keys = await self._cache_provider.keys(pattern)
 
-        a = await self._cache_provider.keys("*")
-        print(a)
-
         if not keys:
             return None
 
