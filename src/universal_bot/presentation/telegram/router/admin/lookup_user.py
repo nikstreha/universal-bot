@@ -4,18 +4,16 @@ from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.query.admin.get_user import GetUserInteractor
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.user_action import (
+    BanUserCallback,
+    ChangeUserRoleCallback,
+)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_ban_confirm_keyboard,
     get_role_keyboard,
     get_user_actions_keyboard,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
-    PrefixCallback,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.user_action import (
-    BanUserCallback,
-    ChangeUserRoleCallback,
 )
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
@@ -56,7 +54,7 @@ async def handle_lookup_enter_id(
     )
 
 
-@router.callback_query(BanUserCallback.filter(F.action == AdminButtons.BAN_USER))
+@router.callback_query(BanUserCallback.filter(F.action == AdminActions.BAN_USER))
 async def handle_ban_prompt(
     callback: types.CallbackQuery, callback_data: BanUserCallback
 ) -> None:
@@ -71,7 +69,7 @@ async def handle_ban_prompt(
 
 
 @router.callback_query(
-    ChangeUserRoleCallback.filter(F.action == AdminButtons.CHANGE_ROLE)
+    ChangeUserRoleCallback.filter(F.action == AdminActions.CHANGE_ROLE)
 )
 async def handle_role_prompt(
     callback: types.CallbackQuery, callback_data: ChangeUserRoleCallback
@@ -81,6 +79,6 @@ async def handle_role_prompt(
         return
 
     await callback.message.edit_reply_markup(
-        reply_markup=get_role_keyboard(callback_data.user_id, PrefixCallback.SET_ROLE)
+        reply_markup=get_role_keyboard(callback_data.user_id, AdminActions.SET_ROLE)
     )
     await callback.answer()

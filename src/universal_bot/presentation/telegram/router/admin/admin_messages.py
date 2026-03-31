@@ -9,15 +9,16 @@ from universal_bot.application.dto.messages.unknown import (
 from universal_bot.application.query.admin.get_admin_messages import (
     GetAdminMessagesInteractor,
 )
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.pagination import (
+    PaginationCallback,
+)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import (
     ActionButtons,
     AdminButtons,
 )
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_admin_messages_next_keyboard,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.pagination import (
-    AdminMessagesCallback,
 )
 
 router = Router()
@@ -58,11 +59,11 @@ async def handle_messages_for_admin(
     )
 
 
-@router.callback_query(AdminMessagesCallback.filter(F.action == ActionButtons.NEXT))
+@router.callback_query(PaginationCallback.filter(F.action == AdminActions.NEXT_MESSAGES))
 @inject
 async def handle_admin_messages_next(
     callback: types.CallbackQuery,
-    callback_data: AdminMessagesCallback,
+    callback_data: PaginationCallback,
     interactor: FromDishka[GetAdminMessagesInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):

@@ -6,15 +6,13 @@ from dishka.integrations.aiogram import FromDishka, inject
 from universal_bot.application.command.admin.update_role import UpdateRoleInteractor
 from universal_bot.application.dto.user.user import UpdateUserRoleDTO
 from universal_bot.application.query.admin.get_user import GetUserInteractor
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.get_role import (
+    GetRoleCallback,
+)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_role_keyboard,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.get_role import (
-    ChangeRoleCallback,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
-    PrefixCallback,
 )
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
@@ -51,15 +49,15 @@ async def handle_update_role_enter_id(
     await message.answer(
         f"User found:\n\n{format_user(user)}\n\nSelect new role:",
         parse_mode="HTML",
-        reply_markup=get_role_keyboard(user_id, PrefixCallback.SET_ROLE),
+        reply_markup=get_role_keyboard(user_id, AdminActions.SET_ROLE),
     )
 
 
-@router.callback_query(ChangeRoleCallback.filter(F.action == PrefixCallback.SET_ROLE))
+@router.callback_query(GetRoleCallback.filter(F.action == AdminActions.SET_ROLE))
 @inject
 async def handle_change_role_confirm(
     callback: types.CallbackQuery,
-    callback_data: ChangeRoleCallback,
+    callback_data: GetRoleCallback,
     interactor: FromDishka[UpdateRoleInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):

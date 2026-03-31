@@ -5,15 +5,16 @@ from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.add_user import AddUserInteractor
 from universal_bot.application.dto.user.user import AddUserDTO
-from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
-    get_role_keyboard,
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.get_role import (
+    GetRoleCallback,
 )
-from universal_bot.presentation.telegram.keyboards.callback_data.get_role import (
-    ChangeRoleCallback,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.prefix import (
+from universal_bot.presentation.telegram.callback_data.admin.prefix import (
     PrefixCallback,
+)
+from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
+    get_role_keyboard,
 )
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
@@ -41,15 +42,15 @@ async def handle_add_user_enter_id(
     await message.answer(
         f"Adding user <code>{user_id}</code>. Select role:",
         parse_mode="HTML",
-        reply_markup=get_role_keyboard(user_id, PrefixCallback.ADD_ROLE),
+        reply_markup=get_role_keyboard(user_id, AdminActions.ADD_ROLE),
     )
 
 
-@router.callback_query(ChangeRoleCallback.filter(F.action == PrefixCallback.ADD_ROLE))
+@router.callback_query(GetRoleCallback.filter(F.action == AdminActions.ADD_ROLE))
 @inject
 async def handle_add_role_confirm(
     callback: types.CallbackQuery,
-    callback_data: ChangeRoleCallback,
+    callback_data: GetRoleCallback,
     interactor: FromDishka[AddUserInteractor],
 ) -> None:
     if not isinstance(callback.message, Message):

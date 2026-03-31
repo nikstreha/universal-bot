@@ -5,12 +5,13 @@ from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.command.admin.ban import BanUserInteractor
 from universal_bot.application.query.admin.get_user import GetUserInteractor
-from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
-    get_ban_confirm_keyboard,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.user_action import (
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.user_action import (
     BanUserCallback,
+)
+from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
+    get_ban_confirm_keyboard,
 )
 from universal_bot.presentation.telegram.router.admin.utils import format_user
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
@@ -51,7 +52,7 @@ async def handle_ban_enter_id(
     )
 
 
-@router.callback_query(BanUserCallback.filter(F.action == AdminButtons.BAN_USER))
+@router.callback_query(BanUserCallback.filter(F.action == AdminActions.BAN_USER))
 @inject
 async def handle_ban_confirm(
     callback: types.CallbackQuery,

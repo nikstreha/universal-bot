@@ -4,15 +4,16 @@ from dishka.integrations.aiogram import FromDishka, inject
 
 from universal_bot.application.dto.user.user_list import GetUserListRequestDTO
 from universal_bot.application.query.admin.user_list import GetUserListInteractor
+from universal_bot.presentation.telegram.callback_data.admin.actions import AdminActions
+from universal_bot.presentation.telegram.callback_data.admin.pagination import (
+    PaginationCallback,
+)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import (
     ActionButtons,
     AdminButtons,
 )
-from universal_bot.presentation.telegram.keyboards.admin.inline_keypoard import (
+from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_user_list_next_keyboard,
-)
-from universal_bot.presentation.telegram.keyboards.callback_data.pagination import (
-    UserListCallback,
 )
 
 router = Router()
@@ -57,11 +58,11 @@ async def handle_user_list(
     )
 
 
-@router.callback_query(UserListCallback.filter(F.action == ActionButtons.NEXT))
+@router.callback_query(PaginationCallback.filter(F.action == AdminActions.NEXT_USER_LIST))
 @inject
 async def handle_user_list_next(
     callback: types.CallbackQuery,
-    callback_data: UserListCallback,
+    callback_data: PaginationCallback,
     interactor: FromDishka[GetUserListInteractor],
 ) -> None:
     cursor = callback_data.cursor
