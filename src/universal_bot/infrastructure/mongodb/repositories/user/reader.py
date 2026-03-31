@@ -1,8 +1,9 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
-from universal_bot.application.dto.user.user import (
+from universal_bot.application.dto.user.user import UserDocumentDTO
+from universal_bot.application.dto.user.user_list import (
     GetUserListRequestDTO,
-    UserDocumentDTO,
+    GetUserListResponseDTO,
 )
 from universal_bot.application.port.db.repositories.user.reader import (
     IUserReader,
@@ -41,13 +42,13 @@ class UserReader(IUserReader):
 
     async def get_collection(
         self, request: GetUserListRequestDTO
-    ) -> list[UserDocumentDTO]:
+    ) -> GetUserListResponseDTO:
         query: dict = {}
 
-        if request.after_id is not None:
+        if request.after_id:
             query["_id"] = {"$gt": request.after_id}
 
-        if request.role is not None:
+        if request.role:
             if request.gt:
                 matching_roles = [r for r in UserRole if r > request.role]
             elif request.lt:
@@ -59,7 +60,19 @@ class UserReader(IUserReader):
         docs = (
             await self.collection.find(query)
             .sort("_id", 1)
-            .limit(request.limit)
-            .to_list(length=request.limit)
+            .limit(request.limit + 1)
+            .to_list(length=request.limit + 1)
         )
-        return [UserDocumentDTO.model_validate(doc) for doc in docs]
+
+        if len(docs) > request.limit:
+            after_id = docs[-1]["_id"]
+            docs.pop()
+        else:
+            after_id = None
+
+        response = GetUserListResponseDTO(
+            user_list=[UserDocumentDTO.model_validate(doc) for doc in docs],
+            after_id=after_id,
+        )
+
+        return response

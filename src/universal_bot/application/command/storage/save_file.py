@@ -1,8 +1,8 @@
 from universal_bot.application.dto.storage.file import FileDTO
 from universal_bot.application.dto.storage.put_file import PutFileDTO
-from universal_bot.application.dto.storage.responce import (
-    SaveFileErrorResponceDTO,
-    SaveFilesResponceDTO,
+from universal_bot.application.dto.storage.response import (
+    SaveFileErrorResponseDTO,
+    SaveFilesResponseDTO,
     Status,
 )
 from universal_bot.application.port.storage.storage_provider import IStorageProvider
@@ -18,10 +18,10 @@ class SaveFileInteractor:
         self._storage_provider = storage_provider
         self._configuration = configuration
 
-    async def __call__(self, file_collention: list[FileDTO]) -> SaveFilesResponceDTO:
+    async def __call__(self, file_collection: list[FileDTO]) -> SaveFilesResponseDTO:
         errors = []
 
-        for file in file_collention:
+        for file in file_collection:
             res = await self._storage_provider.upload_file(
                 PutFileDTO(
                     bucket_name=self._configuration.MINIO_BUCKET,
@@ -32,11 +32,11 @@ class SaveFileInteractor:
             )
 
             if not res:
-                errors.append(SaveFileErrorResponceDTO(file_name=file.file_name))
+                errors.append(SaveFileErrorResponseDTO(file_name=file.file_name))
 
         if not errors:
-            return SaveFilesResponceDTO(status=Status.SUCCESS)
-        elif len(errors) == len(file_collention):
-            return SaveFilesResponceDTO(status=Status.FAIL, errors=errors)
+            return SaveFilesResponseDTO(status=Status.SUCCESS)
+        elif len(errors) == len(file_collection):
+            return SaveFilesResponseDTO(status=Status.FAIL, errors=errors)
         else:
-            return SaveFilesResponceDTO(status=Status.PARTIAL_SUCCESS, errors=errors)
+            return SaveFilesResponseDTO(status=Status.PARTIAL_SUCCESS, errors=errors)

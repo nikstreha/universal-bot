@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 
 from universal_bot.application.dto.storage.delete_file import DeleteFileDTO
@@ -6,11 +5,9 @@ from universal_bot.application.dto.storage.get_file import (
     DownloadDTO,
     GetFilesFromDirectoryDTO,
     GetFilesFromDirectoryResponseDTO,
-    GetPersignedUrlDTO,
+    GetPresignedUrlDTO,
 )
 from universal_bot.application.dto.storage.put_file import PutFileDTO
-
-logger = logging.getLogger(__name__)
 
 
 class IStorageProvider(ABC):
@@ -27,7 +24,7 @@ class IStorageProvider(ABC):
     async def delete_file(self, file: DeleteFileDTO) -> None: ...
 
     @abstractmethod
-    async def get_presigned_url(self, presigned_url: GetPersignedUrlDTO) -> str: ...
+    async def get_presigned_url(self, presigned_url: GetPresignedUrlDTO) -> str: ...
 
     @abstractmethod
     async def get_files_from_directory(

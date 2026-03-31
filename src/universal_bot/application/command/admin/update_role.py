@@ -20,7 +20,7 @@ class UpdateRoleInteractor:
         user = await self._user_writer.get_by_id(user_id=user_id)
 
         if not user:
-            raise
+            raise ValueError("User not found.")
 
         if not user_dto.role.is_temp():
             await self._user_writer.update_role(user_id=user_id, new_role=user_dto.role)

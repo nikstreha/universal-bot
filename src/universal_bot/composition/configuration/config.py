@@ -31,14 +31,10 @@ class Settings(BaseSettings):
 
     MAX_HISTORY: int = 1000
 
-    CONNECT_RETRIES: int = 3
-    CONNECT_TIMEOUT: float = 3.0
-    CONNECT_BACKOFF_BASE: float = 0.5
-    OPERATION_RETRIES: int = 3
-    OPERATION_TIMEOUT: float = 5.0
+    MESSAGE_FOR_ADMIN_PAGE_SIZE: int = 20
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="allow"
+        env_file=".env", env_file_encoding="utf-8", extra="forbid"
     )
 
     @cached_property

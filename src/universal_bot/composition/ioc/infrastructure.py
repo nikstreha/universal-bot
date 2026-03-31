@@ -67,8 +67,8 @@ class DatabaseProvider(Provider):
 
     @provide
     async def get_db(self, configuration: Settings) -> AsyncIterator[AsyncDatabase]:
-        async with MongoConnector(configuration.mongo_url) as client:
-            db = client[configuration.MONGO_DB_NAME]
+        async with MongoConnector(configuration.mongo_url) as mongo:
+            db = mongo.client[configuration.MONGO_DB_NAME]
             yield db
 
 

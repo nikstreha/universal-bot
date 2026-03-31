@@ -26,9 +26,9 @@ class MongoConnector:
         await self.client.close()
         self._client = None
 
-    async def __aenter__(self) -> AsyncMongoClient:
+    async def __aenter__(self) -> MongoConnector:
         await self.up()
-        return self.client
+        return self
 
     async def __aexit__(
         self,

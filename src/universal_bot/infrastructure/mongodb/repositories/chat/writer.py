@@ -14,7 +14,7 @@ class MyChatWriter(IMyChatWriter):
         self.collection = db[Collections.CHATS]
 
     async def replace(self, chat: MyChat) -> None:
-        doc = ChatMapper.to_document(chat).model_dump()
+        doc = ChatMapper.to_document(chat).model_dump(by_alias=True)
 
         await self.collection.replace_one(
             {"_id": doc["_id"]},
@@ -27,7 +27,7 @@ class MyChatWriter(IMyChatWriter):
         user_id: UserId,
         message: Message,
     ) -> None:
-        message_doc = MessageMapper.to_document(message).model_dump()
+        message_doc = MessageMapper.to_document(message).model_dump(by_alias=True)
 
         await self.collection.update_one(
             {"user_id": user_id.value},
@@ -38,6 +38,6 @@ class MyChatWriter(IMyChatWriter):
         )
 
     async def create(self, chat: MyChat) -> None:
-        doc = ChatMapper.to_document(chat).model_dump()
+        doc = ChatMapper.to_document(chat).model_dump(by_alias=True)
 
         await self.collection.insert_one(doc)
