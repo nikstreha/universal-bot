@@ -2,7 +2,6 @@ import logging
 from types import TracebackType
 
 import aiohttp
-from attr import has
 from miniopy_async.api import Minio
 from miniopy_async.error import S3Error
 
@@ -128,38 +127,38 @@ class MinioProvider(IStorageProvider):
 
         count = 0
         last_processed_key = None
-
         has_more = False
 
         for obj in objects_iter:
+            if not obj.object_name:
+                continue
+
             if count >= files_request.limit:
-                if any(ob for ob in objects_iter[files_request.limit:]):
-                    has_more = True
+                has_more = True
                 break
 
             last_processed_key = obj.object_name
 
-            if obj.object_name:
-                if obj.is_dir:
-                    folders.append(
-                        FolderDTO(
-                            name=obj.object_name.rstrip("/").split("/")[-1],
-                            path=obj.object_name,
-                        )
+            if obj.is_dir:
+                folders.append(
+                    FolderDTO(
+                        name=obj.object_name.rstrip("/").split("/")[-1],
+                        path=obj.object_name,
                     )
-                else:
-                    url = await self.client.presigned_get_object(
-                        bucket_name=files_request.bucket_name,
-                        object_name=obj.object_name,
+                )
+            else:
+                url = await self.client.presigned_get_object(
+                    bucket_name=files_request.bucket_name,
+                    object_name=obj.object_name,
+                )
+                items.append(
+                    ItemDTO(
+                        name=obj.object_name.split("/")[-1],
+                        url=url,
                     )
-                    items.append(
-                        ItemDTO(
-                            name=obj.object_name.split("/")[-1],
-                            url=url,
-                        )
-                    )
+                )
 
-                count += 1
+            count += 1
 
         return GetFilesFromDirectoryResponseDTO(
             folders=folders,

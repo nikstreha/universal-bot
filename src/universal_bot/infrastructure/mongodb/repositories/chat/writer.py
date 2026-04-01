@@ -10,8 +10,8 @@ from universal_bot.infrastructure.mongodb.mapper.chat import ChatMapper
 
 class ChatWriter(IChatWriter):
     def __init__(self, db: AsyncDatabase) -> None:
-        self._chats = db[Collections.CHATS]
-        self._buckets = db[Collections.MESSAGE_BUCKETS]
+        self._chats = db[Collections.CHAT]
+        self._buckets = db[Collections.MESSAGE_BUCKET]
 
     async def get_by_id(self, chat_id: ChatId) -> Chat | None:
         doc = await self._chats.find_one({"_id": chat_id.value})

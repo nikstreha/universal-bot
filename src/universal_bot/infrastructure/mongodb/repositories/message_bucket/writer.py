@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class MessageBucketWriter(IMessageBucketWriter):
     def __init__(self, db: AsyncDatabase, bucket_size: int) -> None:
-        self._collection = db[Collections.MESSAGE_BUCKETS]
+        self._collection = db[Collections.MESSAGE_BUCKET]
         self._bucket_size = bucket_size
 
     async def get_latest_bucket(self, chat_id: ChatId) -> MessageBucket | None:

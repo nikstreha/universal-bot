@@ -25,18 +25,18 @@ class UserReader(IUserReader):
         return UserDocumentDTO.model_validate(doc)
 
     async def is_user_permitted(self, user_id: int) -> bool:
-        doc = await self.collection.find_one({"_id": user_id})
+        doc = await self.collection.find_one({"_id": user_id}, {"role": 1})
 
         if doc:
-            return UserDocumentDTO(**doc).role.is_permitted()
+            return UserRole(doc["role"]).is_permitted()
 
         return False
 
     async def is_user_admin(self, user_id: int) -> bool:
-        doc = await self.collection.find_one({"_id": user_id})
+        doc = await self.collection.find_one({"_id": user_id}, {"role": 1})
 
         if doc:
-            return UserDocumentDTO(**doc).role.is_admin()
+            return UserRole(doc["role"]).is_admin()
 
         return False
 

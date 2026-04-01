@@ -16,7 +16,7 @@ from universal_bot.infrastructure.mongodb.collections import Collections
 
 class MessageBucketReader(IMessageBucketReader):
     def __init__(self, db: AsyncDatabase) -> None:
-        self._collection = db[Collections.MESSAGE_BUCKETS]
+        self._collection = db[Collections.MESSAGE_BUCKET]
 
     async def get_messages(
         self, request: GetMessagesRequestDTO

@@ -12,7 +12,7 @@ from universal_bot.infrastructure.mongodb.collections import Collections
 
 class ChatReader(IChatReader):
     def __init__(self, db: AsyncDatabase) -> None:
-        self._collection = db[Collections.CHATS]
+        self._collection = db[Collections.CHAT]
 
     async def get_by_id(self, chat_id: int) -> ChatDocumentDTO | None:
         doc = await self._collection.find_one({"_id": chat_id})

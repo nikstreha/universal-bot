@@ -21,10 +21,6 @@ class UnknownMessageDTO(BaseModel):
     message: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    @property
-    def cache_key(self) -> str:
-        return f"{CacheKey.MESSAGES_FOR_ADMIN}:{self.created_at.isoformat()}"
-
 
 class SuperAdminMessageList(BaseModel):
     messages: list[UnknownMessageDTO] = Field(default_factory=list)

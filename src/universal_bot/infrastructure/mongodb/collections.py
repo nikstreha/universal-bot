@@ -2,6 +2,6 @@ from enum import StrEnum
 
 
 class Collections(StrEnum):
-    CHATS = "chats"
-    MESSAGE_BUCKETS = "message_buckets"
-    USER = "users"
+    CHAT = "chat"
+    MESSAGE_BUCKET = "message_bucket"
+    USER = "user"
