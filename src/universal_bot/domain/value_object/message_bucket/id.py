@@ -4,9 +4,9 @@ from universal_bot.domain.value_object.common import ValueObject
 
 
 @dataclass(frozen=True, slots=True, repr=False)
-class MessageContent(ValueObject):
+class MessageBucketId(ValueObject):
     value: str
 
     def __post_init__(self) -> None:
-        if not self.value.strip():
-            raise ValueError("Message content cannot be empty")
+        if ":" not in self.value:
+            raise ValueError("MessageBucketId must be in '{chat_id}:{seq}' format")

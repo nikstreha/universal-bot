@@ -1,4 +1,4 @@
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, Field, model_validator
 
 from universal_bot.application.dto.user.user import UserDocumentDTO
 from universal_bot.domain.enum.user.role import UserRole

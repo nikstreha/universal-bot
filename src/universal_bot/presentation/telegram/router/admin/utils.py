@@ -1,9 +1,11 @@
+import html
+
 from universal_bot.application.dto.user.user import UserDocumentDTO
 
 
 def format_user(user: UserDocumentDTO) -> str:
     """Return an HTML-formatted string with the user's key fields."""
-    name = user.user_name or "—"
+    name = html.escape(user.user_name) if user.user_name else "—"
     return (
         f"ID: <code>{user.id_}</code>\n"
         f"Name: {name}\n"

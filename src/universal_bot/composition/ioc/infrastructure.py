@@ -5,8 +5,14 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from universal_bot.application.port.ai_chat.ai_provider import IAIProvider
 from universal_bot.application.port.cache.cache_provider import ICacheProvider
-from universal_bot.application.port.db.repositories.chat.reader import IMyChatReader
-from universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
+from universal_bot.application.port.db.repositories.chat.reader import IChatReader
+from universal_bot.application.port.db.repositories.chat.writer import IChatWriter
+from universal_bot.application.port.db.repositories.message_bucket.reader import (
+    IMessageBucketReader,
+)
+from universal_bot.application.port.db.repositories.message_bucket.writer import (
+    IMessageBucketWriter,
+)
 from universal_bot.application.port.db.repositories.user.reader import IUserReader
 from universal_bot.application.port.db.repositories.user.writer import IUserWriter
 from universal_bot.application.port.storage.storage_provider import IStorageProvider
@@ -14,10 +20,16 @@ from universal_bot.composition.configuration.config import Settings
 from universal_bot.infrastructure.minio.storage import MinioProvider
 from universal_bot.infrastructure.mongodb.connect import MongoConnector
 from universal_bot.infrastructure.mongodb.repositories.chat.reader import (
-    MyChatReader,
+    ChatReader,
 )
 from universal_bot.infrastructure.mongodb.repositories.chat.writer import (
-    MyChatWriter,
+    ChatWriter,
+)
+from universal_bot.infrastructure.mongodb.repositories.message_bucket.reader import (
+    MessageBucketReader,
+)
+from universal_bot.infrastructure.mongodb.repositories.message_bucket.writer import (
+    MessageBucketWriter,
 )
 from universal_bot.infrastructure.mongodb.repositories.user.reader import UserReader
 from universal_bot.infrastructure.mongodb.repositories.user.writer import UserWriter
@@ -84,12 +96,22 @@ class DatabaseRepositoryProvider(Provider):
         return UserWriter(db)
 
     @provide
-    def get_message_reader(self, db: AsyncDatabase) -> IMyChatReader:
-        return MyChatReader(db)
+    def get_chat_reader(self, db: AsyncDatabase) -> IChatReader:
+        return ChatReader(db)
 
     @provide
-    def get_message_writer(self, db: AsyncDatabase) -> IMyChatWriter:
-        return MyChatWriter(db)
+    def get_chat_writer(self, db: AsyncDatabase) -> IChatWriter:
+        return ChatWriter(db)
+
+    @provide
+    def get_message_bucket_reader(self, db: AsyncDatabase) -> IMessageBucketReader:
+        return MessageBucketReader(db)
+
+    @provide
+    def get_message_bucket_writer(
+        self, db: AsyncDatabase, configuration: Settings
+    ) -> IMessageBucketWriter:
+        return MessageBucketWriter(db, bucket_size=configuration.MESSAGE_BUCKET_SIZE)
 
 
 def _infrastructure_provider() -> tuple[Provider, ...]:

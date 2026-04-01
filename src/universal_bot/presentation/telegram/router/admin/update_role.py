@@ -15,7 +15,10 @@ from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminBut
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_role_keyboard,
 )
-from universal_bot.presentation.telegram.router.admin.utils import extract_id, format_user
+from universal_bot.presentation.telegram.router.admin.utils import (
+    extract_id,
+    format_user,
+)
 from universal_bot.presentation.telegram.states.admin_states import AdminStates
 
 router = Router()

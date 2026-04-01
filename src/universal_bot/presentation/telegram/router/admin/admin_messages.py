@@ -1,3 +1,5 @@
+import html
+
 from aiogram import F, Router, types
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -14,7 +16,6 @@ from universal_bot.presentation.telegram.callback_data.admin.pagination import (
     PaginationCallback,
 )
 from universal_bot.presentation.telegram.keyboards.admin.buttons import (
-    ActionButtons,
     AdminButtons,
 )
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
@@ -26,7 +27,7 @@ router = Router()
 
 def _build_admin_messages_text(msg_collection: list[UnknownMessageDTO]) -> str:
     lines = [
-        f"{msg.message or '—'} | <code>{msg.user_id}</code> | {msg.created_at.isoformat()}"
+        f"{html.escape(msg.message) if msg.message else '—'} | <code>{msg.user_id}</code> | {msg.created_at.isoformat()}"
         for msg in msg_collection
     ]
     return "Messages:\n\n" + "\n".join(lines)
@@ -59,7 +60,9 @@ async def handle_messages_for_admin(
     )
 
 
-@router.callback_query(PaginationCallback.filter(F.action == AdminActions.NEXT_MESSAGES))
+@router.callback_query(
+    PaginationCallback.filter(F.action == AdminActions.NEXT_MESSAGES)
+)
 @inject
 async def handle_admin_messages_next(
     callback: types.CallbackQuery,

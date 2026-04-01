@@ -1,3 +1,5 @@
+import html
+
 from aiogram import F, Router, types
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -9,7 +11,6 @@ from universal_bot.presentation.telegram.callback_data.admin.pagination import (
     PaginationCallback,
 )
 from universal_bot.presentation.telegram.keyboards.admin.buttons import (
-    ActionButtons,
     AdminButtons,
 )
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
@@ -23,7 +24,7 @@ _PAGE_SIZE = 20
 
 def _build_user_list_text(users: list) -> str:
     lines = [
-        f"{i + 1}. {u.user_name or '—'} | <code>{u.id_}</code> | {u.role}"
+        f"{i + 1}. {html.escape(u.user_name) if u.user_name else '—'} | <code>{u.id_}</code> | {u.role}"
         for i, u in enumerate(users)
     ]
     return "Users:\n\n" + "\n".join(lines)
@@ -58,7 +59,9 @@ async def handle_user_list(
     )
 
 
-@router.callback_query(PaginationCallback.filter(F.action == AdminActions.NEXT_USER_LIST))
+@router.callback_query(
+    PaginationCallback.filter(F.action == AdminActions.NEXT_USER_LIST)
+)
 @inject
 async def handle_user_list_next(
     callback: types.CallbackQuery,

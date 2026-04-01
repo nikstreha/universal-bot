@@ -13,7 +13,7 @@ class RequestDTO:
 
     def __post_init__(self):
         if self.max_tokens <= 0:
-            raise ValueError("max_tokens must be greater than 0")  
+            raise ValueError("max_tokens must be greater than 0")
         if self.temperature < 0 or self.temperature > 2:
             raise ValueError("temperature must be between 0 and 2")
 
