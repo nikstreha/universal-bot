@@ -1,3 +1,5 @@
+import html
+
 from aiogram import F, Router, types
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -23,7 +25,7 @@ _PAGE_SIZE = 20
 
 def _build_user_list_text(users: list) -> str:
     lines = [
-        f"{i + 1}. {u.user_name or '—'} | <code>{u.id_}</code> | {u.role}"
+        f"{i + 1}. {html.escape(u.user_name) if u.user_name else '—'} | <code>{u.id_}</code> | {u.role}"
         for i, u in enumerate(users)
     ]
     return "Users:\n\n" + "\n".join(lines)

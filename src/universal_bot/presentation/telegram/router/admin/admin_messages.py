@@ -1,3 +1,5 @@
+import html
+
 from aiogram import F, Router, types
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka, inject
@@ -26,7 +28,7 @@ router = Router()
 
 def _build_admin_messages_text(msg_collection: list[UnknownMessageDTO]) -> str:
     lines = [
-        f"{msg.message or '—'} | <code>{msg.user_id}</code> | {msg.created_at.isoformat()}"
+        f"{html.escape(msg.message) if msg.message else '—'} | <code>{msg.user_id}</code> | {msg.created_at.isoformat()}"
         for msg in msg_collection
     ]
     return "Messages:\n\n" + "\n".join(lines)

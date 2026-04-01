@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     MONGO_DB_NAME: str
 
     MAX_HISTORY: int = 1000
+    MESSAGE_BUCKET_SIZE: int = 50
 
     MESSAGE_FOR_ADMIN_PAGE_SIZE: int = 20
 

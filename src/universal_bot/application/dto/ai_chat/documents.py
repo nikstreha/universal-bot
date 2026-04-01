@@ -16,7 +16,7 @@ class MessageDocumentDTO(BaseModel):
 
 class ChatDocumentDTO(BaseModel):
     id_: int = Field(alias="_id")
+    tg_chat_id: int
     user_id: int
-    messages: list[MessageDocumentDTO] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime

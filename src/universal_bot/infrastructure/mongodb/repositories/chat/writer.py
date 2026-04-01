@@ -1,43 +1,28 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
-from universal_bot.application.port.db.repositories.chat.writer import IMyChatWriter
-from universal_bot.domain.entity.chat import MyChat
-from universal_bot.domain.value_object.message.message import Message
-from universal_bot.domain.value_object.user.id import UserId
+from universal_bot.application.port.db.repositories.chat.writer import IChatWriter
+from universal_bot.domain.entity.chat import Chat
+from universal_bot.domain.value_object.chat.id import ChatId
 from universal_bot.infrastructure.mongodb.collections import Collections
+from universal_bot.infrastructure.mongodb.documents.chat import ChatDocument
 from universal_bot.infrastructure.mongodb.mapper.chat import ChatMapper
-from universal_bot.infrastructure.mongodb.mapper.message import MessageMapper
 
 
-class MyChatWriter(IMyChatWriter):
+class ChatWriter(IChatWriter):
     def __init__(self, db: AsyncDatabase) -> None:
-        self.collection = db[Collections.CHATS]
+        self._chats = db[Collections.CHATS]
+        self._buckets = db[Collections.MESSAGE_BUCKETS]
 
-    async def replace(self, chat: MyChat) -> None:
+    async def get_by_id(self, chat_id: ChatId) -> Chat | None:
+        doc = await self._chats.find_one({"_id": chat_id.value})
+        if not doc:
+            return None
+        return ChatMapper.to_entity(ChatDocument.model_validate(doc))
+
+    async def create(self, chat: Chat) -> None:
         doc = ChatMapper.to_document(chat).model_dump(by_alias=True)
+        await self._chats.insert_one(doc)
 
-        await self.collection.replace_one(
-            {"_id": doc["_id"]},
-            doc,
-            upsert=True,
-        )
-
-    async def add_message(
-        self,
-        user_id: UserId,
-        message: Message,
-    ) -> None:
-        message_doc = MessageMapper.to_document(message).model_dump(by_alias=True)
-
-        await self.collection.update_one(
-            {"user_id": user_id.value},
-            {
-                "$push": {"messages": message_doc},
-                "$set": {"updated_at": message.created_at},
-            },
-        )
-
-    async def create(self, chat: MyChat) -> None:
-        doc = ChatMapper.to_document(chat).model_dump(by_alias=True)
-
-        await self.collection.insert_one(doc)
+    async def delete(self, chat_id: ChatId) -> None:
+        await self._buckets.delete_many({"chat_id": chat_id.value})
+        await self._chats.delete_one({"_id": chat_id.value})
