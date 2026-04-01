@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from universal_bot.domain.exception import DomainError
 from universal_bot.domain.value_object.common import ValueObject
 
 
@@ -9,4 +10,4 @@ class MessageContent(ValueObject):
 
     def __post_init__(self) -> None:
         if not self.value.strip():
-            raise ValueError("Message content cannot be empty")
+            raise DomainError("Message content cannot be empty")

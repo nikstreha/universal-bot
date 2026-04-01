@@ -16,6 +16,12 @@ from universal_bot.application.dto.storage.get_file import (
 )
 from universal_bot.application.dto.storage.put_file import PutFileDTO
 from universal_bot.application.port.storage.storage_provider import IStorageProvider
+from universal_bot.infrastructure.minio.exeption import (
+    MinioClientError,
+    MinioError,
+    MinioNotConnectedError,
+    MinioStorageError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +36,9 @@ class MinioProvider(IStorageProvider):
     @property
     def client(self) -> Minio:
         if self._client is None:
-            raise RuntimeError("MinioProvider is not connected. Call up() first.")
+            raise MinioNotConnectedError(
+                "MinioProvider is not connected. Call up() first."
+            )
         return self._client
 
     async def up(self) -> None:
@@ -73,13 +81,16 @@ class MinioProvider(IStorageProvider):
             return True
 
         except S3Error as e:
-            logger.error("Minio S3 error during upload %s: %s", file.object_name, e)
+            logger.exception("Minio S3 error during upload %s: %s", file.object_name, e)
+            raise MinioStorageError("Minio S3 error during upload") from e
 
         except aiohttp.ClientError as e:
-            logger.error("Network error during upload %s: %s", file.object_name, e)
+            logger.exception("Network error during upload %s: %s", file.object_name, e)
+            raise MinioClientError("Network error during upload") from e
 
         except Exception as e:
             logger.critical("Unknown error during upload %s: %s", file.object_name, e)
+            raise MinioError("Unknown error during upload") from e
 
         return False
 

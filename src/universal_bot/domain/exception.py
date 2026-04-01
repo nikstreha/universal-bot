@@ -1,13 +1,14 @@
-class DomainError(Exception): ...
+class DomainError(Exception):
+    pass
 
 
 class PermissionDeniedError(DomainError):
-    """Actor does not have sufficient permissions."""
+    pass
 
 
 class CannotModifySuperadminError(PermissionDeniedError):
-    """Cannot ban or change role of a superadmin."""
+    pass
 
 
 class InsufficientRoleWeightError(PermissionDeniedError):
-    """Actor's role weight is not greater than the target's."""
+    pass

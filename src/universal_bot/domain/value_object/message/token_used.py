@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from universal_bot.domain.exception import DomainError
 from universal_bot.domain.value_object.common import ValueObject
 
 
@@ -9,4 +10,4 @@ class TokenUsed(ValueObject):
 
     def __post_init__(self) -> None:
         if self.value < 0:
-            raise ValueError("Token used must be non-negative")
+            raise DomainError("Token used must be non-negative")

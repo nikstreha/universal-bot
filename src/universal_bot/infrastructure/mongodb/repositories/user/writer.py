@@ -9,6 +9,7 @@ from universal_bot.domain.enum.user.role import UserRole
 from universal_bot.domain.value_object.user.id import UserId
 from universal_bot.infrastructure.mongodb.collections import Collections
 from universal_bot.infrastructure.mongodb.documents.user import UserDocument
+from universal_bot.infrastructure.mongodb.exeption import WriterError
 from universal_bot.infrastructure.mongodb.mapper.user import UserMapper
 
 
@@ -37,7 +38,7 @@ class UserWriter(IUserWriter):
             {"_id": user_id.value}, {"$set": {"role": new_role}}
         )
         if result.matched_count == 0:
-            raise ValueError(f"User with id {user_id} not found")
+            raise WriterError(f"User with id {user_id} not found")
 
     async def create(self, user: User) -> None:
         doc = UserMapper.to_document(user).model_dump(by_alias=True)
@@ -45,7 +46,7 @@ class UserWriter(IUserWriter):
             await self.collection.insert_one(doc)
 
         except DuplicateKeyError:
-            raise ValueError(f"User with id {user.id_} already exists") from None
+            raise WriterError(f"User with id {user.id_} already exists") from None
 
     async def ban(self, user_id: UserId) -> None:
         await self.update_role(user_id=user_id, new_role=UserRole.BANNED)
