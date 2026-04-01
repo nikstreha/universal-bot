@@ -57,9 +57,7 @@ class QueryProvider(Provider):
     scope = Scope.REQUEST
 
     @provide
-    def get_user_list_query(
-        self, user_reader: IUserReader
-    ) -> GetUserListInteractor:
+    def get_user_list_query(self, user_reader: IUserReader) -> GetUserListInteractor:
         return GetUserListInteractor(user_reader=user_reader)
 
     @provide

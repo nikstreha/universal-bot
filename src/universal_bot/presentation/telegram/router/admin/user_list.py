@@ -11,7 +11,6 @@ from universal_bot.presentation.telegram.callback_data.admin.pagination import (
     PaginationCallback,
 )
 from universal_bot.presentation.telegram.keyboards.admin.buttons import (
-    ActionButtons,
     AdminButtons,
 )
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
@@ -60,7 +59,9 @@ async def handle_user_list(
     )
 
 
-@router.callback_query(PaginationCallback.filter(F.action == AdminActions.NEXT_USER_LIST))
+@router.callback_query(
+    PaginationCallback.filter(F.action == AdminActions.NEXT_USER_LIST)
+)
 @inject
 async def handle_user_list_next(
     callback: types.CallbackQuery,

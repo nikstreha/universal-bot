@@ -34,9 +34,7 @@ class MessageBucketWriter(IMessageBucketWriter):
         )
         if not doc:
             return None
-        return MessageBucketMapper.to_entity(
-            MessageBucketDocument.model_validate(doc)
-        )
+        return MessageBucketMapper.to_entity(MessageBucketDocument.model_validate(doc))
 
     async def add_message(self, chat_id: ChatId, message: Message) -> None:
         message_doc = MessageMapper.to_document(message).model_dump(by_alias=True)

@@ -1,8 +1,8 @@
 from pymongo.asynchronous.database import AsyncDatabase
 
 from universal_bot.application.dto.ai_chat.chat_list import (
-    GetChatsByUserIdRequestDTO,
     GetChatsByTgChatIdRequestDTO,
+    GetChatsByUserIdRequestDTO,
     GetChatsResponseDTO,
 )
 from universal_bot.application.dto.ai_chat.documents import ChatDocumentDTO
@@ -44,7 +44,7 @@ class ChatReader(IChatReader):
             chats=[ChatDocumentDTO.model_validate(doc) for doc in docs],
             after_id=after_id,
         )
-    
+
     async def get_by_tg_chat_id(
         self, request: GetChatsByTgChatIdRequestDTO
     ) -> GetChatsResponseDTO:

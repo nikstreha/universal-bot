@@ -1,9 +1,11 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-
 from aiogram.types import Message
-from universal_bot.presentation.telegram.callback_data.admin.prefix import PrefixCallback
+
+from universal_bot.presentation.telegram.callback_data.admin.prefix import (
+    PrefixCallback,
+)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
 from universal_bot.presentation.telegram.keyboards.admin.reply_keyboard import (
     get_admin_keyboard,
@@ -31,11 +33,11 @@ async def handle_cancel_command(message: types.Message, state: FSMContext) -> No
 async def handle_cancel_callback(
     callback: types.CallbackQuery,
     state: FSMContext,
-    ) -> None:
+) -> None:
     if not isinstance(callback.message, Message):
         await callback.answer("Message is no longer available.")
         return
-    
+
     await state.clear()
 
     await callback.message.edit_text("Cancelled.")

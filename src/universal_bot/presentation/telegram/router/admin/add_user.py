@@ -10,9 +10,6 @@ from universal_bot.presentation.telegram.callback_data.admin.actions import Admi
 from universal_bot.presentation.telegram.callback_data.admin.get_role import (
     GetRoleCallback,
 )
-from universal_bot.presentation.telegram.callback_data.admin.prefix import (
-    PrefixCallback,
-)
 from universal_bot.presentation.telegram.keyboards.admin.buttons import AdminButtons
 from universal_bot.presentation.telegram.keyboards.admin.inline_keyboard import (
     get_role_keyboard,

@@ -1,9 +1,7 @@
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
-
-from universal_bot.application.dto.cache.cache_key import CacheKey
 
 
 @dataclass(frozen=True)

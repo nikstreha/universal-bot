@@ -17,9 +17,7 @@ class UserPermissionService:
             )
 
     @staticmethod
-    def ensure_can_change_role(
-        actor: User, target: User, new_role: UserRole
-    ) -> None:
+    def ensure_can_change_role(actor: User, target: User, new_role: UserRole) -> None:
         if target.role == UserRole.SUPERADMIN:
             raise CannotModifySuperadminError("Cannot change superadmin's role.")
         if not actor.role > target.role:

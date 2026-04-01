@@ -47,9 +47,7 @@ class MessageBucketReader(IMessageBucketReader):
                 if len(messages) >= request.limit:
                     next_cursor = MessageCursor(seq=seq, index=i + 1)
                     break
-                messages.append(
-                    MessageDocumentDTO.model_validate(bucket_msgs[i])
-                )
+                messages.append(MessageDocumentDTO.model_validate(bucket_msgs[i]))
 
             if next_cursor:
                 break
