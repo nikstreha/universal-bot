@@ -4,3 +4,7 @@ class InfrastructureError(Exception):
 
 class NotConnectedError(InfrastructureError):
     pass
+
+
+class InfrastructureTimeoutError(InfrastructureError):
+    pass

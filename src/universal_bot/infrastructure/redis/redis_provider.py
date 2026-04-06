@@ -1,3 +1,4 @@
+from ast import Not
 import logging
 from types import TracebackType
 
@@ -5,6 +6,8 @@ from redis.asyncio import Redis
 
 from universal_bot.application.dto.cache.cache_data import CacheDataDTO
 from universal_bot.application.port.cache.cache_provider import ICacheProvider
+from universal_bot.infrastructure.exeption import NotConnectedError
+from universal_bot.infrastructure.redis.exeption import RedisConnectionError, RedisError
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +20,7 @@ class RedisProvider(ICacheProvider):
     @property
     def redis(self) -> Redis:
         if self._redis is None:
-            raise RuntimeError("RedisProvider is not connected. Call up() first.")
+            raise RedisConnectionError("RedisProvider is not connected. Call up() first.")
         return self._redis
 
     async def up(self) -> None:
@@ -29,10 +32,11 @@ class RedisProvider(ICacheProvider):
         try:
             await self.redis.ping()  # type: ignore
             logger.info("Redis connection established")
+
         except Exception as e:
             self._redis = None
-            logger.exception("Redis connection error")
-            raise RuntimeError("Redis connection error") from e
+            logger.error("Redis connection error")
+            raise RedisError("Redis connection error") from e
 
     async def down(self) -> None:
         await self.redis.aclose()

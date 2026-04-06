@@ -14,6 +14,8 @@ from universal_bot.application.dto.ai_chat.request import (
 from universal_bot.application.dto.ai_chat.response import ResponseDTO
 from universal_bot.application.port.ai_chat.ai_provider import IAIProvider
 from universal_bot.domain.enum.message.role import MessageRole as Role
+from universal_bot.infrastructure.exeption import NotConnectedError
+from universal_bot.infrastructure.openai.exeption import OpenAIConnectionError, OpenAIError
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ class OpenAIProvider(IAIProvider):
     @property
     def client(self) -> AsyncOpenAI:
         if self._client is None:
-            raise RuntimeError("OpenAIProvider is not connected. Call up() first.")
+            raise OpenAIConnectionError("OpenAIProvider is not connected. Call up() first.")
         return self._client
 
     async def up(self) -> None:
@@ -75,9 +77,9 @@ class OpenAIProvider(IAIProvider):
                 tokens_used=resp.usage.total_tokens if resp.usage else None,
             )
 
-        except Exception:
-            logger.exception("OpenAI generate error")
-            raise
+        except Exception as e:
+            logger.error("OpenAI generate error")
+            raise OpenAIError("OpenAI generate error") from e
 
     async def __aenter__(self) -> OpenAIProvider:
         await self.up()
