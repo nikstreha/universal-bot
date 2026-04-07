@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from universal_bot.domain.exception import DomainError
 from universal_bot.domain.value_object.common import ValueObject
 
 
@@ -9,4 +10,4 @@ class MessageBucketId(ValueObject):
 
     def __post_init__(self) -> None:
         if ":" not in self.value:
-            raise ValueError("MessageBucketId must be in '{chat_id}:{seq}' format")
+            raise DomainError("MessageBucketId must be in '{chat_id}:{seq}' format")

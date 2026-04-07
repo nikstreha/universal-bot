@@ -1,6 +1,7 @@
 from universal_bot.application.dto.cache.cache_data import CacheDataDTO
 from universal_bot.application.dto.cache.cache_key import CacheKey
 from universal_bot.application.dto.user.user import CacheUserDTO, UpdateUserRoleDTO
+from universal_bot.application.exeption.user import UserNotFoundError
 from universal_bot.application.port.cache.cache_provider import ICacheProvider
 from universal_bot.application.port.db.repositories.user.writer import IUserWriter
 from universal_bot.domain.value_object.user.id import UserId
@@ -20,7 +21,7 @@ class UpdateRoleInteractor:
         user = await self._user_writer.get_by_id(user_id=user_id)
 
         if not user:
-            raise ValueError("User not found.")
+            raise UserNotFoundError("User not found.")
 
         if not user_dto.role.is_temp():
             await self._user_writer.update_role(user_id=user_id, new_role=user_dto.role)
