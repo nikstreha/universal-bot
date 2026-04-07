@@ -16,7 +16,9 @@ from universal_bot.application.port.db.repositories.message_bucket.writer import
 from universal_bot.application.port.db.repositories.user.reader import IUserReader
 from universal_bot.application.port.db.repositories.user.writer import IUserWriter
 from universal_bot.application.port.storage.storage_provider import IStorageProvider
+from universal_bot.application.port.storage.upload_limiter import IUploadLimiter
 from universal_bot.composition.configuration.config import Settings
+from universal_bot.infrastructure.concurrency.upload_limiter import UploadLimiter
 from universal_bot.infrastructure.minio.storage import MinioProvider
 from universal_bot.infrastructure.mongodb.connect import MongoConnector
 from universal_bot.infrastructure.mongodb.repositories.chat.reader import (
@@ -114,6 +116,14 @@ class DatabaseRepositoryProvider(Provider):
         return MessageBucketWriter(db, bucket_size=configuration.MESSAGE_BUCKET_SIZE)
 
 
+class UploadLimiterProvider(Provider):
+    scope = Scope.APP
+
+    @provide
+    def get_upload_limiter(self, configuration: Settings) -> IUploadLimiter:
+        return UploadLimiter(max_concurrent=configuration.MAX_CONCURRENT_UPLOADS)
+
+
 def _infrastructure_provider() -> tuple[Provider, ...]:
     return (
         AIProvider(),
@@ -121,4 +131,5 @@ def _infrastructure_provider() -> tuple[Provider, ...]:
         DatabaseProvider(),
         DatabaseRepositoryProvider(),
         StorageProvider(),
+        UploadLimiterProvider(),
     )

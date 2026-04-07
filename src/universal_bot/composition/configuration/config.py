@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     MAX_HISTORY: int = 1000
     MESSAGE_BUCKET_SIZE: int = 50
 
+    MAX_CONCURRENT_UPLOADS: int = 5
+
     MESSAGE_FOR_ADMIN_PAGE_SIZE: int = 20
 
     model_config = SettingsConfigDict(
