@@ -7,16 +7,34 @@ wheels/
 *.egg-info
 .pytest_cache/
 .ruff_cache/
+var/
+mobile/
+docs/
 
 # Virtual environments
 .venv
+.venv-storage/
 
 # Enviroment variables
 .env.example
 .gitignore
 .git
-README.md
 ruff.toml
 
 # Tests
 tests/
+# Never send credentials, backups or deployment data to the builder.
+.env
+.env.*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.pem
+*.key
+*.sql
+*.tar
+*.tar.gz
+var-*/
+.manual/
+.server-setup/
+monitoring/

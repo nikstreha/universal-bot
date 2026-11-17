@@ -1,0 +1,31 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.facebook.react'
+react { autolinkLibrariesWithApp() }
+android {
+    namespace 'local.storage'
+    compileSdk rootProject.ext.compileSdkVersion
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        applicationId 'local.storage'
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName '0.1.0'
+        buildConfigField 'String', 'SERVER_URL', '"' + (project.findProperty('STORAGE_SERVER_URL') ?: 'http://10.0.2.2:7000') + '"'
+    }
+    buildTypes {
+        debug { applicationIdSuffix '.dev' }
+        release {
+            minifyEnabled false
+            // Configure a permanent release signing key before distributing APK updates.
+        }
+    }
+}
+dependencies {
+    implementation('com.facebook.react:react-android')
+    implementation('com.facebook.react:hermes-android')
+    implementation('androidx.work:work-runtime-ktx:2.10.1')
+    implementation('androidx.core:core-ktx:1.16.0')
+}

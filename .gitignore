@@ -1,16 +1,92 @@
-# Python-generated files
+# Private configuration; only the root template belongs in Git.
+.env
+.env.*
+!/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local tooling, credentials and editor state.
+/.agents/
+/.aws/
+/.codex/
+/.idea/
+/.vscode/
+*.code-workspace
+.DS_Store
+Thumbs.db
+
+# Private documentation, monitoring and server configuration.
+/docs/
+/monitoring/
+/.server-setup/
+/.manual/
+
+# Runtime data, local databases, logs and temporary files.
+/var/
+/var-*/
+/temp/
+/tmp/
+/logs/
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.log
+*.log.*
+*.pid
+*.pid.lock
+*.bak
+*.backup
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# Python environments, build output and caches.
+.venv/
+.venv-*/
+venv/
 __pycache__/
-*.py[oc]
+*.py[cod]
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
-temp/
+.mypy_cache/
+.pyright/
+.pyre/
+.hypothesis/
+.tox/
+.nox/
+.cache/
+.uv-cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
 
-# Virtual environments
-.venv
-
-# Enviroment variables
-.env
+# React Native / Android dependencies and generated output.
+node_modules/
+.gradle/
+.kotlin/
+.cxx/
+.externalNativeBuild/
+.metro-cache/
+.parcel-cache/
+.eslintcache
+*.tsbuildinfo
+/mobile/android/local.properties
+/mobile/android/captures/
+/mobile/android/app/src/main/assets/index.android.bundle
+*.apk
+*.aab
+*.hprof

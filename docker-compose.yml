@@ -1,86 +1,76 @@
+name: storage-dev
+
+x-logging: &logging
+  driver: syslog
+  options:
+    syslog-address: '${LOG_SYSLOG_ADDRESS:-tcp://127.0.0.1:1514}'
+    syslog-format: rfc5424micro
+    tag: '{{.Name}}'
+    mode: non-blocking
+    max-buffer-size: '4m'
+    cache-max-size: '10m'
+    cache-max-file: '3'
+
+x-app: &app
+  build:
+    context: .
+    target: cpu
+  user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+  env_file: .env
+  volumes:
+    - ${DEV_DATA_DIR:-./var}:/app/var
+    - minio_dev_data:/storage-disk:ro
+  init: true
+  logging: *logging
+
 services:
-  redis:
-    image: redis:alpine
-    container_name: redis_bot
-    env_file:
-      - .env
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-
   minio:
-    restart: always
-    image: minio/minio
-    container_name: minio_bot
-    env_file:
-      - .env
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    image: ${MINIO_IMAGE:-minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e}
+    command: ['--json', 'server', '/data', '--console-address', ':9001']
+    env_file: .env
+    logging: *logging
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
     volumes:
-      - minio_data:/data
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+      - minio_dev_data:/data
 
-  mongo:
-    image: mongo:8.2.4-noble
-    container_name: mongo
-    env_file:
-      - .env
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+  migrate:
+    <<: *app
+    entrypoint: ['alembic']
+    command: ['upgrade', 'head']
+
+  api:
+    <<: *app
+    command: ['api', '--host', 'api']
     ports:
-      - "27017:27017"
+      - '127.0.0.1:7000:7000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+
+  bot:
+    <<: *app
+    command: ['bot']
+    profiles: ['telegram']
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: ['worker']
     volumes:
-      - db_data:/data/db
-      - mongot:/data/mongot
-    networks:
-      - db_network
-    healthcheck:
-      test: >
-        mongosh --quiet
-        -u $MONGO_ROOT_USER
-        -p $MONGO_ROOT_PASSWORD
-        --eval "db.adminCommand('ping')"
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/
-      ME_CONFIG_BASICAUTH_ENABLED: true
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-    networks:
-      - db_network
-
-networks:
-  db_network:
+      - ${DEV_DATA_DIR:-./var}:/app/var
+      - minio_dev_data:/storage-disk:ro
+      - ${MODEL_CACHE_DIR:-./var/cache}:/app/cache
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
 
 volumes:
-  redis_data:
-  minio_data:
-  db_data:
-  mongot:
+  minio_dev_data:
