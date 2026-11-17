@@ -1,27 +1,19 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+  - repo: local
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        name: Ruff (uv.lock)
+        entry: uv run --frozen ruff check --fix
+        language: system
+        types_or: [python, pyi]
       - id: ruff-format
-
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.18
-    hooks:
+        name: Ruff format (uv.lock)
+        entry: uv run --frozen ruff format
+        language: system
+        types_or: [python, pyi]
       - id: uv-lock
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-        exclude: ^chart/
-      - id: check-json
-      - id: check-toml
-
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.407
-    hooks:
-      - id: pyright
+        name: Check uv.lock
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: ^(pyproject\.toml|uv\.lock)$
