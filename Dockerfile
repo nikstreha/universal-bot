@@ -15,6 +15,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv UV_LINK_MODE=copy \
     HF_HOME=/app/cache/huggingface
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
+RUN chmod -R u=rwX,go=rX /app/src
 COPY alembic.ini ./
 
 FROM python-runtime AS cpu
@@ -37,6 +38,7 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv UV_LINK_MODE=copy UV_PYTHON_INSTALL_DIR=/op
 RUN --mount=type=cache,target=/root/.cache/uv uv python install 3.14
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
+RUN chmod -R u=rwX,go=rX /app/src
 COPY alembic.ini ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable --extra transcription
 USER 10001:10001
