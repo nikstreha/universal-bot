@@ -83,12 +83,10 @@ class FinalizeUploadInteractor:
                 upload_id=upload.id_
             )
         key = upload.original_key(job.generation).value
-        await asyncio.to_thread(self._storage.ready)
-        await asyncio.to_thread(self._storage.guard, upload.size_bytes.value)
-        await asyncio.to_thread(
-            self._storage.compose, key, [p.object_key.value for p in parts]
-        )
-        size, sha256, header = await asyncio.to_thread(self._storage.inspect, key=key)
+        await self._storage.ready()
+        await self._storage.guard(upload.size_bytes.value)
+        await self._storage.compose(key, [p.object_key.value for p in parts])
+        size, sha256, header = await self._storage.inspect(key=key)
         kind, mime = await asyncio.to_thread(self._inspector.classify, header)
         async with self._uow:
             current_job = await self._job_writer.find_by_id(key=job.id_)
@@ -126,4 +124,4 @@ class FinalizeUploadInteractor:
                 ):
                     await self._job_writer.add(entity=task)
         for part in parts:
-            await asyncio.to_thread(self._storage.delete, part.object_key.value)
+            await self._storage.delete(part.object_key.value)

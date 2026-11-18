@@ -1,3 +1,4 @@
+import asyncio
 import io
 import subprocess
 import tempfile
@@ -39,7 +40,7 @@ class LocalThumbnailer(IThumbnailer):
     def __init__(self, storage: IObjectStorage, temporary_directory: Path) -> None:
         self._storage, self._directory = (storage, temporary_directory)
 
-    def create(
+    async def create(
         self, object_key: str, target_key: str, media_kind: str, size_bytes: int
     ) -> None:
         ensure(
@@ -50,63 +51,67 @@ class LocalThumbnailer(IThumbnailer):
         self._directory.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=self._directory) as folder:
             path = Path(folder) / "source"
-            self._storage.download(object_key, str(path))
-            if media_kind == "video":
-                output = Path(folder) / "frame.jpg"
-                with path.open("rb") as stream:
-                    detected = filetype.guess(stream.read(8192))
-                demuxer = {
-                    "video/mp4": "mov",
-                    "video/quicktime": "mov",
-                    "video/webm": "matroska",
-                    "video/x-matroska": "matroska",
-                    "video/x-msvideo": "avi",
-                    "video/mpeg": "mpeg",
-                    "video/ogg": "ogg",
-                }.get(detected.mime if detected else "")
-                ensure(
+            await self._storage.download(object_key, str(path))
+            data = await asyncio.to_thread(self._render, path, media_kind)
+            await self._storage.put(target_key, data, "image/jpeg")
+
+    def _render(self, path: Path, media_kind: str) -> bytes:
+        if media_kind == "video":
+            output = path.parent / "frame.jpg"
+            with path.open("rb") as stream:
+                detected = filetype.guess(stream.read(8192))
+            demuxer = {
+                "video/mp4": "mov",
+                "video/quicktime": "mov",
+                "video/webm": "matroska",
+                "video/x-matroska": "matroska",
+                "video/x-msvideo": "avi",
+                "video/mpeg": "mpeg",
+                "video/ogg": "ogg",
+            }.get(detected.mime if detected else "")
+            ensure(
+                demuxer,
+                UnsupportedPreviewError,
+                "Предпросмотр этого контейнера не поддерживается",
+            )
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-nostdin",
+                    "-v",
+                    "error",
+                    "-protocol_whitelist",
+                    "file",
+                    "-f",
                     demuxer,
-                    UnsupportedPreviewError,
-                    "Предпросмотр этого контейнера не поддерживается",
+                    *(["-enable_drefs", "0"] if demuxer == "mov" else []),
+                    "-ss",
+                    "0",
+                    "-i",
+                    str(path),
+                    "-frames:v",
+                    "1",
+                    "-vf",
+                    "scale=640:-2",
+                    "-y",
+                    str(output),
+                ],
+                check=True,
+                timeout=120,
+                capture_output=True,
+            )
+            path = output
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(path) as dimensions:
+                ensure(
+                    dimensions.width * dimensions.height <= 40000000,
+                    ThumbnailTooLargeError,
+                    "Слишком большое разрешение изображения",
                 )
-                subprocess.run(
-                    [
-                        "ffmpeg",
-                        "-nostdin",
-                        "-v",
-                        "error",
-                        "-protocol_whitelist",
-                        "file",
-                        "-f",
-                        demuxer,
-                        *(["-enable_drefs", "0"] if demuxer == "mov" else []),
-                        "-ss",
-                        "0",
-                        "-i",
-                        str(path),
-                        "-frames:v",
-                        "1",
-                        "-vf",
-                        "scale=640:-2",
-                        "-y",
-                        str(output),
-                    ],
-                    check=True,
-                    timeout=120,
-                    capture_output=True,
-                )
-                path = output
-            with warnings.catch_warnings():
-                warnings.simplefilter("error", Image.DecompressionBombWarning)
-                with Image.open(path) as dimensions:
-                    ensure(
-                        dimensions.width * dimensions.height <= 40000000,
-                        ThumbnailTooLargeError,
-                        "Слишком большое разрешение изображения",
-                    )
-            with Image.open(path) as source:
-                image = ImageOps.exif_transpose(source).convert("RGB")
-                image.thumbnail((640, 640))
-                data = io.BytesIO()
-                image.save(data, "JPEG", quality=82)
-            self._storage.put(target_key, data.getvalue(), "image/jpeg")
+        with Image.open(path) as source:
+            image = ImageOps.exif_transpose(source).convert("RGB")
+            image.thumbnail((640, 640))
+            data = io.BytesIO()
+            image.save(data, "JPEG", quality=82)
+        return data.getvalue()

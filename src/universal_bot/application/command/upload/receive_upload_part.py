@@ -1,5 +1,3 @@
-import asyncio
-
 from universal_bot.application.dto.common.policy import Policy
 from universal_bot.application.exception.common import PartConflictError
 from universal_bot.application.port.clock import IClock
@@ -74,7 +72,7 @@ class ReceiveUploadPartInteractor:
             "Хеш части не совпадает",
         )
         key = f"staging/{upload_id}/{index}/{self._secrets.identity()}"
-        await asyncio.to_thread(self._storage.put, key, data)
+        await self._storage.put(key, data)
         published = False
         created = False
         try:
@@ -113,4 +111,4 @@ class ReceiveUploadPartInteractor:
             published = created
         finally:
             if not published:
-                await asyncio.to_thread(self._storage.delete, key)
+                await self._storage.delete(key)

@@ -1,5 +1,3 @@
-import asyncio
-
 from universal_bot.application.port.clock import IClock
 from universal_bot.application.port.media.thumbnailer import IThumbnailer
 from universal_bot.application.port.persistence.file_storage.object_storage import (
@@ -54,8 +52,7 @@ class CreateThumbnailInteractor:
             ):
                 return
         key = file.thumbnail_target(job.generation).value
-        await asyncio.to_thread(
-            self._thumbnailer.create,
+        await self._thumbnailer.create(
             file.object_key.value,
             key,
             file.media_kind,
@@ -75,4 +72,4 @@ class CreateThumbnailInteractor:
                 fresh.publish_thumbnail(ObjectKey(key))
                 published = True
         if not published:
-            await asyncio.to_thread(self._storage.delete, key)
+            await self._storage.delete(key)

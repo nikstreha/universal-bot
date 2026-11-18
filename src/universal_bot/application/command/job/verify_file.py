@@ -1,5 +1,3 @@
-import asyncio
-
 from universal_bot.application.port.clock import IClock
 from universal_bot.application.port.persistence.file_storage.object_storage import (
     IObjectStorage,
@@ -64,9 +62,7 @@ class VerifyFileInteractor:
                     FailureReason("FILE_UNAVAILABLE"), Timestamp(self._clock.now())
                 )
                 return
-        size, digest, _ = await asyncio.to_thread(
-            self._storage.inspect, file.object_key.value
-        )
+        size, digest, _ = await self._storage.inspect(file.object_key.value)
         async with self._uow:
             current_job = await self._job_writer.find_by_id(key=job.id_)
             ensure(current_job, LeaseLostError, "Задача не найдена")

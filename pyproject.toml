@@ -9,7 +9,6 @@ dependencies = [
   "uvicorn>=0.54.0",
   "httpx>=0.28.1",
   "pydantic-settings>=2.16.2",
-  "minio>=7.2.20",
   "pillow>=13.0.0",
   "filetype>=1.2.0",
   "sqlalchemy[asyncio]>=2.1.8",
@@ -20,6 +19,7 @@ dependencies = [
   "python-dotenv>=1.2.4",
   "urllib3>=2.8.0",
   "typer>=0.29.1",
+  "aioboto3>=15.5.0",
 ]
 
 [project.optional-dependencies]

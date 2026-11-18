@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 from universal_bot.application.command.access.decide_access_request import (
@@ -177,7 +176,7 @@ class TelegramAdminHandler:
             await self._gateway.message(chat_id, "Решение сохранено.")
         elif text == "Состояние сервера":
             try:
-                await asyncio.to_thread(self._storage.ready)
+                await self._storage.ready()
                 status = "доступно"
             except Exception:
                 status = "недоступно"

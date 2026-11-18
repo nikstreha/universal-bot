@@ -27,7 +27,7 @@ x-app: &app
       bind:
         create_host_path: false
     - type: bind
-      source: ${MINIO_DATA_DIR:?Set MINIO_DATA_DIR}
+      source: ${GARAGE_SPACE_DIR:?Set GARAGE_SPACE_DIR}
       target: /storage-disk
       read_only: true
       bind:
@@ -47,18 +47,23 @@ x-app: &app
   logging: *logging
 
 services:
-  minio:
-    image: ${MINIO_IMAGE:-minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e}
+  garage:
+    image: ${GARAGE_IMAGE:-docker.io/dxflrs/garage@sha256:677e5b758e4425a325b811c425c026bf35a4bf42f7ddbaa773de3f4fd779a5a5}
+    entrypoint: ['/garage']
+    command: ['server', '--single-node']
     user: '10001:10001'
-    command: ['--json', 'server', '/data', '--console-address', ':9001']
-    env_file: .env
     environment:
-      STORAGE_ANDROID_KEYSTORE_PASSWORD: ''
-    networks: [storage]
+      GARAGE_CONFIG_FILE: /etc/garage.toml
     volumes:
       - type: bind
-        source: ${MINIO_DATA_DIR:?Set MINIO_DATA_DIR}
-        target: /data
+        source: ${GARAGE_CONFIG_FILE:?Set GARAGE_CONFIG_FILE}
+        target: /etc/garage.toml
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${GARAGE_DATA_DIR:?Set GARAGE_DATA_DIR}
+        target: /var/lib/garage
         bind:
           create_host_path: false
     restart: unless-stopped
@@ -70,7 +75,14 @@ services:
     mem_limit: 1g
     memswap_limit: 1g
     cpus: 2
+    healthcheck:
+      test: ['CMD', '/garage', 'json-api', 'GetClusterHealth']
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
     logging: *logging
+    networks: [storage]
 
   migrate:
     <<: *app
@@ -97,7 +109,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio:
+      garage:
         condition: service_started
     healthcheck:
       test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://api-ingress:7000/health/live', timeout=3).close()"]
@@ -134,7 +146,7 @@ services:
         bind:
           create_host_path: false
       - type: bind
-        source: ${MINIO_DATA_DIR:?Set MINIO_DATA_DIR}
+        source: ${GARAGE_SPACE_DIR:?Set GARAGE_SPACE_DIR}
         target: /storage-disk
         read_only: true
         bind:
@@ -154,7 +166,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio:
+      garage:
         condition: service_started
 
 networks:

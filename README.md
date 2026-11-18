@@ -5,7 +5,7 @@
 администрирование — обычными кнопками. Вход в приложение подтверждается в Telegram;
 на сервере используются обычные сессии, без JWT.
 
-Бэкенд: Python 3.14, FastAPI, Dishka, SQLAlchemy asyncio, SQLite, Alembic и MinIO.
+Бэкенд: Python 3.14, FastAPI, Dishka, SQLAlchemy asyncio, SQLite, Alembic и Garage.
 Транскрибация: faster-whisper; файлы до 20 МБ. Точные версии зависимостей — в `uv.lock`.
 Аудио декодируется установленным в образах FFmpeg в mono PCM 16 kHz перед передачей
 модели. Декодирование ограничено по времени и длительности аудио; сетевые протоколы
@@ -17,36 +17,34 @@
 
 ## Запуск
 
-Единственный файл настроек — `.env`, пример — `.env.example`.
-Скопировать пример, если файла ещё нет, заполнить настройки и установить `chmod 600 .env`.
-Существующий `.env` автоматически не перезаписывается. Его читают приложение,
-MinIO и Compose; отдельных файлов по сервисам и окружениям нет.
+Исходные настройки — в `.env`, пример — `.env.example`. Хранилище использует
+`aioboto3` и Garage 2.5.0. Garage нужно предварительно настроить: создать bucket,
+ключи и разрешения. Приложение само не создаёт bucket и не получает административных
+секретов Garage. Пароль ключа подписи APK на сервер не переносится.
+
+Production готовится приватным комплектом `.server-setup/`: установщик формирует
+отдельные окружения API, бота, worker и миграций, выполняет bootstrap Garage и
+проверки S3. `.server-setup/` исключён из Git и переносится отдельно; один `git pull`
+его не доставляет. Запускать нужно установщик готового релиза, а не исходный
+Compose с общим `.env`.
 
 Логи и алерты обслуживает отдельный `monitoring/compose.yml` (Alloy, Loki, Grafana).
-Каталог `monitoring/` приватный, исключён из Git и переносится на сервер отдельно;
-инструкция находится в `monitoring/README.md`. Мониторинг запускается до приложения.
+Он запускается до приложения. Установщик приложения рабочий мониторинг не меняет.
 
-Production:
+В production API публикуется только на `127.0.0.1:7000`; Garage не публикует
+порты на хост. Для CPU-разработки служит `docker-compose.yml`: после подготовки
+конфигурации и ключей Garage его S3 endpoint доступен на `127.0.0.1:3900`.
+В конфигурации SDK используется регион `garage` и path-style URL.
 
-```bash
-docker compose -f compose.production.yml config --quiet
-docker compose -f monitoring/compose.yml up -d --wait
-docker compose -f compose.production.yml up -d --build
-```
+Оригиналы и временные части находятся в разных bucket. API читает оригиналы,
+но записывает и удаляет только временные части. Worker получает права обработки
+и штатной очистки. Боту доступен отдельный пустой bucket для проверки доступности.
 
-Для CPU-разработки в том же `.env` установить `APP__SERVER__ENV=dev`,
-`APP__ASR__DEVICE=cpu`, `APP__ASR__COMPUTE_TYPE=int8`, указать свои DEV_UID/DEV_GID.
-MODEL_CACHE_DIR должен указывать на доступный каталог хоста.
+**Garage не поддерживает S3 versioning, Object Lock и IAM bucket policies.**
+Корзина приложения хранится в SQLite и не является защитой от компрометации worker
+или сервера. Один узел не имеет репликации: для важных файлов нужна отдельная
+копия вне сервера. Бэкап БД на втором SSD не содержит сами изображения.
 
-```bash
-mkdir -p var/cache
-docker compose -f monitoring/compose.yml up -d --wait
-docker compose up --build api worker
-docker compose --profile telegram up bot
-```
-
-API публикуется на `127.0.0.1:7000`. MinIO dev доступен на `127.0.0.1:9000`,
-production MinIO не публикует порты. Миграции выполняет Compose перед запуском.
 Режим задаётся в `.env`: `APP__TELEGRAM__MODE=polling` или `webhook`.
 Polling не требует публичного HTTPS; webhook требует HTTPS-адрес и секрет,
 регистрируется при запуске бота. После смены режима пересоздать API и бот.

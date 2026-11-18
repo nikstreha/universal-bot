@@ -1,5 +1,3 @@
-import asyncio
-
 from universal_bot.application.dto.common.policy import Policy
 from universal_bot.application.dto.upload.create_upload import CreateUploadRequestDTO
 from universal_bot.application.exception.common import (
@@ -65,7 +63,7 @@ class CreateUploadInteractor:
             FileTooLargeError,
             "Размер файла превышает лимит",
         )
-        await asyncio.to_thread(self._storage.ready)
+        await self._storage.ready()
         async with self._uow:
             await self._access_policy.require_access(user_id=owner_id.value)
             existing = await self._upload_writer.find_by_owner_id_and_operation_key(
@@ -89,8 +87,7 @@ class CreateUploadInteractor:
                 LimitReachedError,
                 "Слишком много незавершённых загрузок",
             )
-            await asyncio.to_thread(
-                self._storage.guard,
+            await self._storage.guard(
                 2 * (size.value + sum(row.size_bytes.value for row in active)),
             )
             row = Upload(

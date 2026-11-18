@@ -1,5 +1,3 @@
-import asyncio
-
 from universal_bot.application.port.clock import IClock
 from universal_bot.application.port.persistence.file_storage.object_storage import (
     IObjectStorage,
@@ -56,12 +54,9 @@ class MaintainStorageInteractor:
             for file in purge:
                 file.begin_purge(Timestamp(self._clock.now()))
         for file in purge:
-            await asyncio.to_thread(self._storage.delete, file.object_key.value)
+            await self._storage.delete(file.object_key.value)
             if file.thumbnail_key is not None:
-                await asyncio.to_thread(
-                    self._storage.delete,
-                    file.thumbnail_key.value,
-                )
+                await self._storage.delete(file.thumbnail_key.value)
             async with self._uow:
                 for check in await self._verification_writer.list_by_file_id(
                     file_id=file.id_
@@ -85,7 +80,7 @@ class MaintainStorageInteractor:
                     upload_id=upload.id_
                 )
             for part in parts:
-                await asyncio.to_thread(self._storage.delete, part.object_key.value)
+                await self._storage.delete(part.object_key.value)
                 async with self._uow:
                     fresh = await self._upload_part_writer.find_by_id(key=part.id_)
                     if fresh:

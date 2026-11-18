@@ -21,23 +21,47 @@ x-app: &app
     STORAGE_ANDROID_KEYSTORE_PASSWORD: ''
   volumes:
     - ${DEV_DATA_DIR:-./var}:/app/var
-    - minio_dev_data:/storage-disk:ro
+    - ${GARAGE_SPACE_DIR:?Set GARAGE_SPACE_DIR}:/storage-disk:ro
   init: true
   logging: *logging
 
 services:
-  minio:
-    image: ${MINIO_IMAGE:-minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e}
-    command: ['--json', 'server', '/data', '--console-address', ':9001']
-    env_file: .env
+  garage:
+    image: ${GARAGE_IMAGE:-docker.io/dxflrs/garage@sha256:677e5b758e4425a325b811c425c026bf35a4bf42f7ddbaa773de3f4fd779a5a5}
+    entrypoint: ['/garage']
+    command: ['server', '--single-node']
+    user: '10001:10001'
     environment:
-      STORAGE_ANDROID_KEYSTORE_PASSWORD: ''
-    logging: *logging
-    ports:
-      - '127.0.0.1:9000:9000'
-      - '127.0.0.1:9001:9001'
+      GARAGE_CONFIG_FILE: /etc/garage.toml
     volumes:
-      - minio_dev_data:/data
+      - type: bind
+        source: ${GARAGE_CONFIG_FILE:?Set GARAGE_CONFIG_FILE}
+        target: /etc/garage.toml
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${GARAGE_DATA_DIR:?Set GARAGE_DATA_DIR}
+        target: /var/lib/garage
+        bind:
+          create_host_path: false
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=64m,mode=1777']
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 2
+    healthcheck:
+      test: ['CMD', '/garage', 'json-api', 'GetClusterHealth']
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 12
+    logging: *logging
+    ports: ['127.0.0.1:3900:3900']
 
   migrate:
     <<: *app
@@ -52,7 +76,7 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio:
+      garage:
         condition: service_started
 
   bot:
@@ -68,13 +92,10 @@ services:
     command: ['worker']
     volumes:
       - ${DEV_DATA_DIR:-./var}:/app/var
-      - minio_dev_data:/storage-disk:ro
+      - ${GARAGE_SPACE_DIR:?Set GARAGE_SPACE_DIR}:/storage-disk:ro
       - ${MODEL_CACHE_DIR:-./var/cache}:/app/cache
     depends_on:
       migrate:
         condition: service_completed_successfully
-      minio:
+      garage:
         condition: service_started
-
-volumes:
-  minio_dev_data:

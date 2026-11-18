@@ -1,4 +1,3 @@
-import asyncio
 import re
 from urllib.parse import quote
 
@@ -46,7 +45,7 @@ class FileResponseFactory:
         ensure(row.state == "active", FileTrashedError, "Сначала восстановите файл")
         key = row.thumbnail_key if thumbnail else row.object_key
         ensure(key, ThumbnailNotReadyError, "Миниатюра пока недоступна")
-        size = await asyncio.to_thread(self._storage.size, key)
+        size = await self._storage.size(key)
         start = 0
         end = size - 1
         partial = False
@@ -69,10 +68,10 @@ class FileResponseFactory:
         async def chunks():
             if not length:
                 return
-            source = await asyncio.to_thread(self._storage.read, key, start, length)
+            source = await self._storage.read(key, start, length)
             checked = 0
             try:
-                while chunk := (await asyncio.to_thread(source.read, 256 * 1024)):
+                while chunk := (await source.read(256 * 1024)):
                     if self._clock.now() - checked >= 2:
                         current = await self._authenticate(secret=authorization[7:])
                         ensure(
@@ -88,7 +87,7 @@ class FileResponseFactory:
                         checked = self._clock.now()
                     yield chunk
             finally:
-                await asyncio.to_thread(self._storage.close, source)
+                await self._storage.close(source)
 
         mime = "image/jpeg" if thumbnail else row.mime_type
         safe_inline = inline and (
