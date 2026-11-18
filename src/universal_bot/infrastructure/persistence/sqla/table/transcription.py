@@ -14,7 +14,7 @@ transcription_table = Table(
     Column("state", String, nullable=False),
     Column("text", String, nullable=True),
     Column("error", String, nullable=True),
-    Column("delivered_message_id", Integer, nullable=True),
+    Column("response_message_id", Integer, nullable=True),
     Column("finished_at", Integer, nullable=True),
     UniqueConstraint("chat_id", "message_id"),
 )

@@ -60,6 +60,17 @@ class TranscribeAudioInteractor:
                 return
             if not row.start(at):
                 return
+            status = Delivery.for_transcription(
+                id_=DeliveryId(self._secrets.identity()),
+                transcription=row,
+                text=MessageText("Расшифровываю аудио…"),
+                at=at,
+                suffix="processing",
+            )
+            if not await self._delivery_writer.find_by_dedup_key(
+                dedup_key=status.dedup_key
+            ):
+                await self._delivery_writer.add(entity=status)
         text = await asyncio.to_thread(
             self._recognizer.transcribe, row.telegram_file_id.value
         )

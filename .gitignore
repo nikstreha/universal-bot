@@ -85,6 +85,7 @@ node_modules/
 .eslintcache
 *.tsbuildinfo
 /mobile/android/local.properties
+/mobile/android/.signing/
 /mobile/android/captures/
 /mobile/android/app/src/main/assets/index.android.bundle
 *.apk

@@ -28,6 +28,16 @@ class ITelegramClient(ABC):
     ) -> TelegramMessageDTO: ...
 
     @abstractmethod
+    async def edit_message(
+        self, chat_id: int, message_id: int, text: str
+    ) -> TelegramMessageDTO: ...
+
+    @abstractmethod
+    async def edit_document(
+        self, chat_id: int, message_id: int, text: str, filename: str
+    ) -> TelegramMessageDTO: ...
+
+    @abstractmethod
     async def answer(self, callback_id: str) -> None: ...
 
     @abstractmethod

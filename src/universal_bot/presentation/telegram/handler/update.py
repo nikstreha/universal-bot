@@ -169,19 +169,13 @@ class TelegramUpdateHandler:
                 return
         audio = message.get("voice") or message.get("audio") or message.get("document")
         if audio:
-            _, created = await self._accept_audio(
+            await self._accept_audio(
                 user_id=user_id,
                 chat_id=chat_id,
                 message_id=message["message_id"],
                 file_id=audio["file_id"],
                 size=audio.get("file_size"),
             )
-            if created:
-                await self._gateway.message(
-                    chat_id,
-                    "Принято в очередь на расшифровку.",
-                    reply_to=message["message_id"],
-                )
             return
         await self._gateway.message(
             chat_id,

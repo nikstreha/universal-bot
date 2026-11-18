@@ -20,7 +20,7 @@ class Transcription(Entity[TranscriptionId]):
     state: TranscriptionState
     text: MessageText | None
     error: FailureReason | None
-    delivered_message_id: TelegramMessageId | None
+    response_message_id: TelegramMessageId | None
     finished_at: Timestamp | None
 
     def __init__(
@@ -35,7 +35,7 @@ class Transcription(Entity[TranscriptionId]):
         state: TranscriptionState = TranscriptionState.ACCEPTED,
         text: MessageText | None = None,
         error: FailureReason | None = None,
-        delivered_message_id: TelegramMessageId | None = None,
+        response_message_id: TelegramMessageId | None = None,
         finished_at: Timestamp | None = None,
     ) -> None:
         super().__init__(id_=id_)
@@ -47,7 +47,7 @@ class Transcription(Entity[TranscriptionId]):
         self._state = state
         self.text = text
         self.error = error
-        self.delivered_message_id = delivered_message_id
+        self.response_message_id = response_message_id
         self.finished_at = finished_at
 
     @property
@@ -102,7 +102,17 @@ class Transcription(Entity[TranscriptionId]):
     def delivered(self, message_id: TelegramMessageId | None, terminal: bool) -> None:
         if self.state is TranscriptionState.CANCELLED:
             return
-        self.delivered_message_id = message_id
-        self._state = (
-            TranscriptionState.FAILED if terminal else TranscriptionState.COMPLETED
-        )
+        if message_id is not None:
+            self.attach_response(message_id)
+        if terminal:
+            self._state = TranscriptionState.FAILED
+        elif self.state is TranscriptionState.DELIVERING:
+            self._state = TranscriptionState.COMPLETED
+
+    def attach_response(self, message_id: TelegramMessageId) -> None:
+        if (
+            self.response_message_id is not None
+            and self.response_message_id != message_id
+        ):
+            raise InvalidStateError("У аудио уже есть ответ бота")
+        self.response_message_id = message_id

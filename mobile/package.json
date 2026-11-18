@@ -3,26 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "react-native start",
-    "android": "react-native run-android",
+    "start": "react-native start --host 127.0.0.1",
+    "android": "react-native run-android --no-packager",
     "typecheck": "tsc --noEmit",
     "bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res"
   },
   "dependencies": {
-    "react": "19.1.4",
-    "react-native": "0.81.6",
-    "react-native-safe-area-context": "^5.5.2"
+    "react": "19.3.1",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "5.11.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "20.0.0",
-    "@react-native-community/cli-platform-android": "20.0.0",
-    "@react-native/babel-preset": "0.81.6",
-    "@react-native/metro-config": "0.81.6",
-    "@react-native/typescript-config": "0.81.6",
-    "@types/react": "^19.1.4",
-    "typescript": "^5.8.3"
+    "@babel/core": "7.29.13",
+    "@babel/runtime": "7.29.14",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/metro-config": "0.88.1",
+    "@react-native/typescript-config": "0.88.1",
+    "@types/react": "19.3.0",
+    "typescript": "6.0.3"
   },
-  "engines": {"node": ">=20"}
+  "engines": {
+    "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
+  }
 }

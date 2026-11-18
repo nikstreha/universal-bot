@@ -2,9 +2,16 @@ apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.facebook.react'
 react { autolinkLibrariesWithApp() }
+def serverUrl = (project.findProperty('STORAGE_SERVER_URL') ?: 'http://10.0.2.2:7000').toString()
+def botUsername = (project.findProperty('STORAGE_BOT_USERNAME') ?: '').toString()
+// Only these public values enter BuildConfig. Signing credentials stay in the build process.
+def releaseKey = rootProject.file('.signing/storage-release.jks')
+def releasePassword = providers.environmentVariable('STORAGE_ANDROID_KEYSTORE_PASSWORD').orNull
+def javaString = { value -> groovy.json.JsonOutput.toJson(value) }
 android {
     namespace 'local.storage'
     compileSdk rootProject.ext.compileSdkVersion
+    compileSdkMinor = rootProject.ext.compileSdkMinorVersion
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
@@ -13,19 +20,59 @@ android {
         targetSdk rootProject.ext.targetSdkVersion
         versionCode 1
         versionName '0.1.0'
-        buildConfigField 'String', 'SERVER_URL', '"' + (project.findProperty('STORAGE_SERVER_URL') ?: 'http://10.0.2.2:7000') + '"'
+        buildConfigField 'String', 'SERVER_URL', javaString(serverUrl)
+        buildConfigField 'String', 'BOT_USERNAME', javaString(botUsername)
+    }
+    buildFeatures { buildConfig true }
+    // Gradle can run on JDK 25; Android bytecode stays compatible with Java 17.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        release {
+            storeFile releaseKey
+            storePassword releasePassword
+            keyAlias 'storage'
+            keyPassword releasePassword
+        }
     }
     buildTypes {
         debug { applicationIdSuffix '.dev' }
         release {
             minifyEnabled false
-            // Configure a permanent release signing key before distributing APK updates.
+            signingConfig signingConfigs.release
+        }
+    }
+}
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+tasks.configureEach { task ->
+    if (task.name == 'preReleaseBuild') {
+        task.doFirst {
+            if (!releaseKey.isFile() || !releasePassword) {
+                throw new GradleException('Release requires mobile/android/.signing/storage-release.jks and STORAGE_ANDROID_KEYSTORE_PASSWORD in the build environment.')
+            }
+            def uri = new URI(serverUrl)
+            if (uri.scheme != 'https' || !uri.host || uri.userInfo || uri.query || uri.fragment ||
+                !(uri.path in ['', '/']) || uri.port < -1 || uri.port > 65535 || uri.port == 0 ||
+                !(botUsername ==~ /(?i)[a-z0-9_]{2,29}bot/)) {
+                throw new GradleException('Release requires a trusted HTTPS STORAGE_SERVER_URL and STORAGE_BOT_USERNAME.')
+            }
         }
     }
 }
 dependencies {
     implementation('com.facebook.react:react-android')
     implementation('com.facebook.react:hermes-android')
-    implementation('androidx.work:work-runtime-ktx:2.10.1')
-    implementation('androidx.core:core-ktx:1.16.0')
+    implementation('androidx.work:work-runtime-ktx:2.12.0')
+    implementation('androidx.core:core-ktx:1.19.1')
+    implementation('androidx.recyclerview:recyclerview:1.4.0')
+    implementation('androidx.swiperefreshlayout:swiperefreshlayout:1.2.0')
+    implementation('androidx.media3:media3-exoplayer:1.11.1')
+    implementation('androidx.media3:media3-ui:1.11.1')
+    implementation('androidx.media3:media3-datasource-okhttp:1.11.1')
 }

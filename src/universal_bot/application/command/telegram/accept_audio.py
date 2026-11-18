@@ -3,6 +3,9 @@ from universal_bot.application.exception.common import (
     LimitReachedError,
 )
 from universal_bot.application.port.clock import IClock
+from universal_bot.application.port.persistence.repository.delivery.writer import (
+    IDeliveryWriter,
+)
 from universal_bot.application.port.persistence.repository.job.writer import IJobWriter
 from universal_bot.application.port.persistence.repository.transcription.writer import (
     ITranscriptionWriter,
@@ -11,15 +14,18 @@ from universal_bot.application.port.persistence.uow import IUnitOfWork
 from universal_bot.application.port.security.secrets import ISecrets
 from universal_bot.application.service.access.access_policy import AccessPolicy
 from universal_bot.domain.common.guard import ensure
+from universal_bot.domain.entity.delivery import Delivery
 from universal_bot.domain.entity.job import Job
 from universal_bot.domain.entity.transcription import Transcription
 from universal_bot.domain.enum.job.kind import JobKind
 from universal_bot.domain.enum.transcription.state import TranscriptionState
 from universal_bot.domain.exception.common import InvalidRequestError
+from universal_bot.domain.value_object.delivery.id import DeliveryId
 from universal_bot.domain.value_object.job.id import JobId
 from universal_bot.domain.value_object.job.resource_id import ResourceId
 from universal_bot.domain.value_object.messaging.message_id import TelegramMessageId
 from universal_bot.domain.value_object.messaging.telegram_file_id import TelegramFileId
+from universal_bot.domain.value_object.messaging.text import MessageText
 from universal_bot.domain.value_object.time.timestamp import Timestamp
 from universal_bot.domain.value_object.transcription.id import TranscriptionId
 from universal_bot.domain.value_object.user.id import TelegramUserId
@@ -35,6 +41,7 @@ class AcceptAudioInteractor:
         transcription_writer: ITranscriptionWriter,
         uow: IUnitOfWork,
         job_writer: IJobWriter,
+        delivery_writer: IDeliveryWriter,
     ) -> None:
         self._access_policy = access_policy
         self._clock = clock
@@ -42,6 +49,7 @@ class AcceptAudioInteractor:
         self._transcription_writer = transcription_writer
         self._uow = uow
         self._job_writer = job_writer
+        self._delivery_writer = delivery_writer
 
     async def __call__(
         self,
@@ -92,6 +100,15 @@ class AcceptAudioInteractor:
                 created_at=Timestamp(self._clock.now()),
             )
             await self._transcription_writer.add(entity=row)
+            await self._delivery_writer.add(
+                entity=Delivery.for_transcription(
+                    id_=DeliveryId(self._secrets.identity()),
+                    transcription=row,
+                    text=MessageText("Аудио в очереди на расшифровку."),
+                    at=row.created_at,
+                    suffix="accepted",
+                )
+            )
             task = Job.create(
                 id_=JobId(self._secrets.identity()),
                 kind=JobKind("transcribe"),

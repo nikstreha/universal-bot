@@ -26,6 +26,7 @@ import androidx.work.WorkerParameters
 import local.storage.MainActivity
 import org.json.JSONObject
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
 object TransferScheduler {
     const val NOTIFICATION=1008
@@ -33,16 +34,22 @@ object TransferScheduler {
         val manager=context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel("transfer","Передача файлов",NotificationManager.IMPORTANCE_LOW))
         val open=PendingIntent.getActivity(context,0,Intent(context,MainActivity::class.java),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        fun action(name: String, code: Int)=PendingIntent.getBroadcast(context,code,Intent(context,TransferActions::class.java).setAction(name),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val sessionId=SecureStore(context).read("session")?.optString("localId").orEmpty()
+        fun action(name: String, code: Int)=PendingIntent.getBroadcast(context,code,Intent(context,TransferActions::class.java).setAction(name).putExtra("session_id",sessionId),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         return NotificationCompat.Builder(context,"transfer").setSmallIcon(android.R.drawable.stat_sys_upload)
             .setContentTitle("storage · передача файлов").setContentText("Загрузка и проверка серверных копий")
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)
             .addAction(android.R.drawable.ic_media_pause,"Пауза",action("pause",1))
             .addAction(android.R.drawable.ic_menu_close_clear_cancel,"Отмена",action("cancel",2)).build()
     }
+    fun cancel(context:Context) {
+        WorkManager.getInstance(context).cancelUniqueWork("storage-transfer")
+        context.getSystemService(JobScheduler::class.java).cancel(1007)
+        context.getSystemService(NotificationManager::class.java).cancel(NOTIFICATION)
+    }
     fun kick(context: Context) {
         val session=SecureStore(context).read("session")?:return
-        val pending=TransferDatabase(context).rows(session.getString("userId")).any { it.getString("state") in TransferEngine.RUNNABLE }
+        val pending=TransferDatabase(context).rows(session.getString("userId"),session.getString("baseUrl")).any { it.getString("state") in TransferEngine.RUNNABLE }
         if(!pending)return
         if(Build.VERSION.SDK_INT>=34) {
             val job=JobInfo.Builder(1007,ComponentName(context,TransferJobService::class.java))
@@ -58,26 +65,29 @@ object TransferScheduler {
 class TransferWorker(context: Context,params: WorkerParameters):Worker(context,params) {
     override fun doWork(): Result {
         setForegroundAsync(ForegroundInfo(TransferScheduler.NOTIFICATION,TransferScheduler.notification(applicationContext),ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)).get()
-        return if(TransferEngine(applicationContext).run()) Result.retry() else Result.success()
+        return if(TransferEngine(applicationContext) { isStopped }.run()) Result.retry() else Result.success()
     }
 }
 
 class TransferJobService:JobService() {
     private val executor=Executors.newSingleThreadExecutor()
+    @Volatile private var stopped=AtomicBoolean(false)
     override fun onStartJob(params: JobParameters): Boolean {
         if(Build.VERSION.SDK_INT>=34) setNotification(params,TransferScheduler.NOTIFICATION,TransferScheduler.notification(this),JOB_END_NOTIFICATION_POLICY_REMOVE)
-        executor.execute { val retry=TransferEngine(this).run(); jobFinished(params,retry) }
+        val cancellation=AtomicBoolean(false);stopped=cancellation
+        executor.execute { val retry=TransferEngine(this) { cancellation.get() }.run(); jobFinished(params,retry) }
         return true
     }
-    override fun onStopJob(params: JobParameters):Boolean = true
-    override fun onDestroy() { executor.shutdown(); super.onDestroy() }
+    override fun onStopJob(params: JobParameters):Boolean { stopped.set(true);return true }
+    override fun onDestroy() { stopped.set(true);executor.shutdown(); super.onDestroy() }
 }
 
 class TransferActions:BroadcastReceiver() {
     override fun onReceive(context:Context,intent:Intent) {
         val session=SecureStore(context).read("session")?:return
+        if(intent.action !in setOf("pause","cancel") || intent.getStringExtra("session_id")!=session.optString("localId"))return
         val db=TransferDatabase(context)
-        db.rows(session.getString("userId")).filter { it.getString("state") in TransferEngine.RUNNABLE }.forEach {
+        db.rows(session.getString("userId"),session.getString("baseUrl")).filter { it.getString("state") in TransferEngine.RUNNABLE }.forEach {
             db.patch(it.getString("id"),if(intent.action=="cancel")"cancelled" else "paused")
         }
     }

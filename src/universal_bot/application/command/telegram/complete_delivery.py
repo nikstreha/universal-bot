@@ -52,4 +52,10 @@ class CompleteDeliveryInteractor:
                     key=TranscriptionId(row.dedup_key.value.split(":")[1])
                 )
                 if transcription is not None:
-                    transcription.delivered(delivered_id, terminal)
+                    if delivered_id is not None and not terminal:
+                        transcription.attach_response(delivered_id)
+                    if terminal or row.dedup_key.value.rsplit(":", 1)[-1] in (
+                        "result",
+                        "error",
+                    ):
+                        transcription.delivered(delivered_id, terminal)

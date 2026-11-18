@@ -98,22 +98,42 @@ class TelegramWorker:
                 if not row:
                     await asyncio.sleep(1)
                     continue
+                if row.lease_until is None:
+                    raise RuntimeError("Claimed delivery has no lease")
                 async with self._container() as scope:
                     authorize = await scope.get(AuthorizeDeliveryInteractor)
                     row = await authorize(
-                        delivery_id=row.id, lease_until=row.lease_until
+                        delivery_id=str(row.id_.value),
+                        lease_until=row.lease_until.value,
                     )
                     if row is None:
                         continue
                     complete = await scope.get(CompleteDeliveryInteractor)
                     try:
-                        if row.filename:
+                        if row.edit_message_id is not None:
+                            if row.filename:
+                                result = await gateway.edit_document(
+                                    row.chat_id,
+                                    row.edit_message_id,
+                                    row.text,
+                                    row.filename,
+                                )
+                            else:
+                                result = await gateway.edit_message(
+                                    row.chat_id, row.edit_message_id, row.text
+                                )
+                        elif row.filename:
                             result = await gateway.document(
-                                row.chat_id, row.text, row.filename, row.reply_to
+                                row.chat_id,
+                                row.text,
+                                row.filename,
+                                row.reply_to,
                             )
                         else:
                             result = await gateway.message(
-                                row.chat_id, row.text, reply_to=row.reply_to
+                                row.chat_id,
+                                row.text,
+                                reply_to=row.reply_to,
                             )
                         await complete(
                             delivery_id=row.id,
@@ -123,6 +143,8 @@ class TelegramWorker:
                     except BaseError as exc:
                         terminal = (
                             exc.details.get("telegram_code") == 403
+                            or exc.details.get("telegram_reason")
+                            == "message_unavailable"
                             or clock.now() - row.created_at > 86400
                         )
                         await complete(
@@ -133,7 +155,13 @@ class TelegramWorker:
                             else exc.details.get("retry_after", 30),
                             terminal=terminal,
                         )
-                    except Exception:
+                    except Exception as exc:
+                        logger.warning(
+                            "Telegram delivery deferred: %s",
+                            type(exc).__name__,
+                            exc_info=exc,
+                            extra={"event": "telegram_delivery_failed"},
+                        )
                         await complete(
                             delivery_id=row.id,
                             lease_until=row.lease_until,

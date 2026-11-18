@@ -35,8 +35,8 @@ def map_transcription_table() -> None:
             "_state": transcription_table.c.state,
             "text": composite(MessageText.from_raw, transcription_table.c.text),
             "error": composite(FailureReason.from_raw, transcription_table.c.error),
-            "delivered_message_id": composite(
-                TelegramMessageId.from_raw, transcription_table.c.delivered_message_id
+            "response_message_id": composite(
+                TelegramMessageId.from_raw, transcription_table.c.response_message_id
             ),
             "finished_at": composite(
                 Timestamp.from_raw, transcription_table.c.finished_at

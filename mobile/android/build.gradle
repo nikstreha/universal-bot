@@ -1,17 +1,35 @@
 buildscript {
     ext {
-        buildToolsVersion = '36.0.0'
+        buildToolsVersion = '37.0.0'
         minSdkVersion = 31
-        compileSdkVersion = 36
+        compileSdkVersion = 37
+        compileSdkMinorVersion = 0
         targetSdkVersion = 36
         ndkVersion = '27.1.12297006'
-        kotlinVersion = '2.1.20'
+        kotlinVersion = '2.4.21'
+        androidGradlePluginVersion = '9.3.3'
     }
     repositories { google(); mavenCentral() }
     dependencies {
-        classpath('com.android.tools.build:gradle')
+        classpath("com.android.tools.build:gradle:$androidGradlePluginVersion")
         classpath('com.facebook.react:react-native-gradle-plugin')
-        classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
+// API 37 is published as android-37.0. Apply the same platform to autolinked
+// Android libraries after their build scripts have configured the SDK major.
+subprojects { subproject ->
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        subproject.pluginManager.withPlugin(pluginId) {
+            subproject.extensions.getByName('androidComponents').finalizeDsl { androidDsl ->
+                androidDsl.buildToolsVersion = rootProject.ext.buildToolsVersion
+                if (androidDsl.compileSdk == rootProject.ext.compileSdkVersion) {
+                    androidDsl.compileSdkMinor = rootProject.ext.compileSdkMinorVersion
+                }
+            }
+        }
+    }
+}
+
+// Register DSL callbacks before React Native evaluates the Android subprojects.
 apply plugin: 'com.facebook.react.rootproject'

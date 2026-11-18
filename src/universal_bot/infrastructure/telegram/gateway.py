@@ -35,10 +35,29 @@ class TelegramGateway(ITelegramClient):
         )
         payload = response.json()
         if not payload.get("ok"):
+            description = payload.get("description", "").lower()
+            if (
+                method.startswith("editMessage")
+                and payload.get("error_code") == 400
+                and "message is not modified" in description
+            ):
+                return {"message_id": data["message_id"]}
+            reason = (
+                "message_unavailable"
+                if any(
+                    value in description
+                    for value in (
+                        "message to edit not found",
+                        "message can't be edited",
+                    )
+                )
+                else None
+            )
             raise TelegramErrorError(
                 "Ошибка Telegram",
                 telegram_code=payload.get("error_code"),
                 retry_after=payload.get("parameters", {}).get("retry_after", 30),
+                telegram_reason=reason,
             )
         return payload["result"]
 
@@ -106,3 +125,32 @@ class TelegramGateway(ITelegramClient):
         await self._call(
             "answerCallbackQuery", {"callback_query_id": callback_id, "text": text}
         )
+
+    async def edit_message(
+        self, chat_id: int, message_id: int, text: str
+    ) -> TelegramMessageDTO:
+        result = await self._call(
+            "editMessageText",
+            {"chat_id": chat_id, "message_id": message_id, "text": text},
+        )
+        return TelegramMessageDTO(message_id=result["message_id"])
+
+    async def edit_document(
+        self, chat_id: int, message_id: int, text: str, filename: str
+    ) -> TelegramMessageDTO:
+        result = await self._call(
+            "editMessageMedia",
+            {
+                "chat_id": str(chat_id),
+                "message_id": str(message_id),
+                "media": json.dumps(
+                    {
+                        "type": "document",
+                        "media": "attach://document",
+                        "caption": "Готово. Расшифровка в файле.",
+                    }
+                ),
+            },
+            {"document": (filename, text.encode(), "text/plain; charset=utf-8")},
+        )
+        return TelegramMessageDTO(message_id=int(result["message_id"]))

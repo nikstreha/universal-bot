@@ -17,6 +17,8 @@ x-app: &app
     target: cpu
   user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
   env_file: .env
+  environment:
+    STORAGE_ANDROID_KEYSTORE_PASSWORD: ''
   volumes:
     - ${DEV_DATA_DIR:-./var}:/app/var
     - minio_dev_data:/storage-disk:ro
@@ -28,6 +30,8 @@ services:
     image: ${MINIO_IMAGE:-minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e}
     command: ['--json', 'server', '/data', '--console-address', ':9001']
     env_file: .env
+    environment:
+      STORAGE_ANDROID_KEYSTORE_PASSWORD: ''
     logging: *logging
     ports:
       - '127.0.0.1:9000:9000'

@@ -1,1 +1,9 @@
-{"extends":"@react-native/typescript-config","compilerOptions":{"strict":true,"noUncheckedIndexedAccess":true},"include":["src/**/*.ts","src/**/*.tsx"]}
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["react", "react-native"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

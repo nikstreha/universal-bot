@@ -1,5 +1,6 @@
 import type {ApiPort} from '../application/ports';
 import type {Session, StoredFile} from '../domain/models';
+import {NativeModules} from 'react-native';
 
 export class ApiError extends Error {constructor(readonly code: string, message: string) {super(message);}}
 export class HttpApi implements ApiPort {
@@ -7,14 +8,20 @@ export class HttpApi implements ApiPort {
   setSession(session: Session|null) {this.session=session;}
   async request<T>(path: string, body?: unknown, method='GET', headers: Record<string,string>={}): Promise<T> {
     if(!this.session) throw new ApiError('AUTH_REQUIRED','Войдите через Telegram');
-    const response = await fetch(this.session.baseUrl+'/api/v1'+path, {method, redirect:'error', headers:{Authorization:'Bearer '+this.session.token,'Content-Type':'application/json',...headers}, ...(body!==undefined?{body:JSON.stringify(body)}:{})});
-    if(response.status===204) return undefined as T;
-    const result = await response.json();
-    if(!response.ok) throw new ApiError(result.error?.code||'HTTP_ERROR',result.error?.message||'Ошибка сервера');
-    return result as T;
+    const session=this.session;
+    try {
+      const result=await NativeModules.StorageBridge.request(path,method,body===undefined?null:JSON.stringify(body),headers,session.localId);
+      if(this.session!==session)throw new ApiError('SESSION_CHANGED','Сессия изменилась');
+      return JSON.parse(result) as T;
+    } catch(error) {
+      if(this.session!==session)throw new ApiError('SESSION_CHANGED','Сессия изменилась');
+      if(error instanceof ApiError)throw error;
+      const failure=error as {code?:string;message?:string};
+      throw new ApiError(failure.code||'HTTP_ERROR',failure.message||'Ошибка сервера');
+    }
   }
   mediaSource(file: StoredFile, thumbnail=false) {
     if(!this.session) throw new ApiError('AUTH_REQUIRED','Войдите через Telegram');
-    return {uri:`${this.session.baseUrl}/api/v1/files/${file.id}/${thumbnail?'thumbnail':'content?disposition=inline'}`,headers:{Authorization:'Bearer '+this.session.token}};
+    return {uri:`${this.session.baseUrl}/api/v1/files/${encodeURIComponent(file.id)}/${thumbnail?'thumbnail':'content?disposition=inline'}`,headers:{}};
   }
 }
