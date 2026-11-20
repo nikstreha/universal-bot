@@ -55,7 +55,12 @@ class TelegramWorker:
                     exc_info=exc,
                     extra={"event": "telegram_polling_failed"},
                 )
-                await asyncio.sleep(5)
+                delay = 5
+                if isinstance(exc, BaseError) and exc.payload.get("telegram_code") == 429:
+                    retry_after = exc.payload.get("retry_after")
+                    if type(retry_after) is int and 0 <= retry_after <= 3600:
+                        delay = max(delay, retry_after)
+                await asyncio.sleep(delay)
 
     async def _process(self, gateway: ITelegramClient) -> None:
         while True:

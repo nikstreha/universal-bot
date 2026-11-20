@@ -53,6 +53,18 @@ class TelegramGateway(ITelegramClient):
                 )
                 else None
             )
+            if reason is None:
+                code = payload.get("error_code")
+                if code == 409:
+                    reason = (
+                        "webhook_active" if "webhook" in description else "polling_conflict"
+                    )
+                elif code == 429:
+                    reason = "rate_limited"
+                elif code == 401:
+                    reason = "authentication_failed"
+                elif type(code) is int and 500 <= code <= 599:
+                    reason = "telegram_unavailable"
             raise TelegramErrorError(
                 "Ошибка Telegram",
                 telegram_code=payload.get("error_code"),
